@@ -21,6 +21,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
+  String _selectedRole = 'user'; // Default role
 
   @override
   void dispose() {
@@ -215,6 +216,152 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     },
                     onFieldSubmitted: (_) => _handleSignUp(),
                   ),
+                  const SizedBox(height: 16),
+
+                  // Role Selection Card
+                  Card(
+                    elevation: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.admin_panel_settings,
+                                color: Colors.blue,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Tipo de Cuenta',
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Column(
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedRole = 'user';
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: _selectedRole == 'user'
+                                          ? Colors.blue
+                                          : Colors.grey.shade300,
+                                      width: _selectedRole == 'user' ? 2 : 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: _selectedRole == 'user'
+                                        ? Colors.blue.shade50
+                                        : Colors.white,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        _selectedRole == 'user'
+                                            ? Icons.radio_button_checked
+                                            : Icons.radio_button_unchecked,
+                                        color: _selectedRole == 'user'
+                                            ? Colors.blue
+                                            : Colors.grey,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      const Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Usuario',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            Text(
+                                              'Acceso básico al sistema',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedRole = 'admin';
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: _selectedRole == 'admin'
+                                          ? Colors.blue
+                                          : Colors.grey.shade300,
+                                      width: _selectedRole == 'admin' ? 2 : 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: _selectedRole == 'admin'
+                                        ? Colors.blue.shade50
+                                        : Colors.white,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        _selectedRole == 'admin'
+                                            ? Icons.radio_button_checked
+                                            : Icons.radio_button_unchecked,
+                                        color: _selectedRole == 'admin'
+                                            ? Colors.blue
+                                            : Colors.grey,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      const Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Administrador',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            Text(
+                                              'Acceso completo al sistema',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 32),
 
                   // Sign Up Button
@@ -283,7 +430,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           password: _passwordController.text,
           metadata: {
             'full_name': _fullNameController.text.trim(),
-            'role': 'user', // Default role
+            'role': _selectedRole, // Use selected role
           },
         ),
       );

@@ -63,7 +63,7 @@ class DashboardScreen extends StatelessWidget {
         body: BlocBuilder<AuthBloc, auth_states.AuthState>(
           builder: (context, state) {
             if (state is auth_states.AuthAuthenticated) {
-              return _buildDashboardContent(state.user, state.role);
+              return _buildDashboardContent(context, state.user, state.role);
             } else if (state is auth_states.AuthLoading) {
               return const Center(child: CircularProgressIndicator());
             } else {
@@ -75,7 +75,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDashboardContent(User user, String? role) {
+  Widget _buildDashboardContent(BuildContext context, User user, String? role) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -161,40 +161,7 @@ class DashboardScreen extends StatelessWidget {
             crossAxisCount: 2,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            children: [
-              _buildActionCard(
-                title: 'Inventario',
-                icon: Icons.inventory,
-                color: Colors.blue,
-                onTap: () {
-                  // TODO: Navigate to inventory
-                },
-              ),
-              _buildActionCard(
-                title: 'Productos',
-                icon: Icons.shopping_bag,
-                color: Colors.green,
-                onTap: () {
-                  // TODO: Navigate to products
-                },
-              ),
-              _buildActionCard(
-                title: 'Movimientos',
-                icon: Icons.swap_horiz,
-                color: Colors.orange,
-                onTap: () {
-                  // TODO: Navigate to movements
-                },
-              ),
-              _buildActionCard(
-                title: 'Reportes',
-                icon: Icons.bar_chart,
-                color: Colors.purple,
-                onTap: () {
-                  // TODO: Navigate to reports
-                },
-              ),
-            ],
+            children: _buildActionCards(context, role),
           ),
           const SizedBox(height: 24),
 
@@ -229,6 +196,88 @@ class DashboardScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  List<Widget> _buildActionCards(BuildContext context, String? role) {
+    // Acciones básicas para todos los usuarios
+    List<Widget> actions = [
+      _buildActionCard(
+        title: 'Inventario',
+        icon: Icons.inventory,
+        color: Colors.blue,
+        onTap: () {
+          _showComingSoon(context, 'Inventario');
+        },
+      ),
+      _buildActionCard(
+        title: 'Productos',
+        icon: Icons.shopping_bag,
+        color: Colors.green,
+        onTap: () {
+          _showComingSoon(context, 'Productos');
+        },
+      ),
+    ];
+
+    // Acciones adicionales para administradores
+    if (role?.toLowerCase() == 'admin') {
+      actions.addAll([
+        _buildActionCard(
+          title: 'Usuarios',
+          icon: Icons.people,
+          color: Colors.purple,
+          onTap: () {
+            _showComingSoon(context, 'Gestión de Usuarios');
+          },
+        ),
+        _buildActionCard(
+          title: 'Configuración',
+          icon: Icons.settings,
+          color: Colors.grey,
+          onTap: () {
+            _showComingSoon(context, 'Configuración');
+          },
+        ),
+        _buildActionCard(
+          title: 'Reportes Admin',
+          icon: Icons.analytics,
+          color: Colors.red,
+          onTap: () {
+            _showComingSoon(context, 'Reportes de Administrador');
+          },
+        ),
+        _buildActionCard(
+          title: 'Auditoría',
+          icon: Icons.history,
+          color: Colors.orange,
+          onTap: () {
+            _showComingSoon(context, 'Auditoría del Sistema');
+          },
+        ),
+      ]);
+    } else {
+      // Acciones para usuarios regulares
+      actions.addAll([
+        _buildActionCard(
+          title: 'Movimientos',
+          icon: Icons.swap_horiz,
+          color: Colors.orange,
+          onTap: () {
+            _showComingSoon(context, 'Movimientos');
+          },
+        ),
+        _buildActionCard(
+          title: 'Reportes',
+          icon: Icons.bar_chart,
+          color: Colors.purple,
+          onTap: () {
+            _showComingSoon(context, 'Reportes');
+          },
+        ),
+      ]);
+    }
+
+    return actions;
   }
 
   Widget _buildActionCard({
@@ -359,6 +408,31 @@ class DashboardScreen extends StatelessWidget {
             ),
           ),
           Expanded(child: Text(value)),
+        ],
+      ),
+    );
+  }
+
+  void _showComingSoon(BuildContext context, String feature) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.construction, color: Colors.orange),
+            SizedBox(width: 8),
+            Text('Próximamente'),
+          ],
+        ),
+        content: Text(
+          'La funcionalidad "$feature" estará disponible próximamente.\n\n'
+          'Esta es una versión demo del sistema de autenticación.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Entendido'),
+          ),
         ],
       ),
     );
