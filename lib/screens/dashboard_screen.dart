@@ -4,9 +4,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart' as auth_states;
+import '../blocs/reports_bloc.dart';
+import '../repositories/inventory_repository.dart';
+import '../repositories/auth_repository.dart';
 import 'login_screen.dart';
 import 'warehouse_list_screen.dart';
 import 'sales/sales_screen.dart';
+import 'reports/reports_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -270,9 +274,7 @@ class DashboardScreen extends StatelessWidget {
           color: Colors.indigo,
           onTap: () {
             Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const SalesScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const SalesScreen()),
             );
           },
         ),
@@ -289,7 +291,17 @@ class DashboardScreen extends StatelessWidget {
           icon: Icons.bar_chart,
           color: Colors.purple,
           onTap: () {
-            _showComingSoon(context, 'Reportes');
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                  create: (context) => ReportsBloc(
+                    repository: InventoryRepository.instance,
+                    authRepository: AuthRepository.instance,
+                  ),
+                  child: const ReportsScreen(),
+                ),
+              ),
+            );
           },
         ),
       ]);

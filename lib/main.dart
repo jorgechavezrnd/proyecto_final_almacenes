@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'services/supabase_service.dart';
 import 'repositories/auth_repository.dart';
 import 'repositories/inventory_repository.dart';
@@ -62,6 +63,16 @@ class MainApp extends StatelessWidget {
         theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
         home: const AuthWrapper(),
         debugShowCheckedModeBanner: false,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('es', 'ES'), // Español
+          Locale('en', 'US'), // English
+        ],
+        locale: const Locale('es', 'ES'),
       ),
     );
   }

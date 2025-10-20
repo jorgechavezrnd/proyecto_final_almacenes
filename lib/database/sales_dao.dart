@@ -19,7 +19,11 @@ class SalesDao {
     DateTime endDate,
   ) async {
     return await (_database.select(_database.sales)
-          ..where((s) => s.saleDate.isBetweenValues(startDate, endDate))
+          ..where(
+            (s) =>
+                s.saleDate.isBiggerOrEqualValue(startDate) &
+                s.saleDate.isSmallerOrEqualValue(endDate),
+          )
           ..orderBy([(s) => OrderingTerm.desc(s.saleDate)]))
         .get();
   }
@@ -38,6 +42,35 @@ class SalesDao {
           ..where((s) => s.userId.equals(userId))
           ..orderBy([(s) => OrderingTerm.desc(s.saleDate)]))
         .get();
+  }
+
+  /// Get sales by user and date range
+  Future<List<Sale>> getSalesByUserAndDateRange(
+    String userId,
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    print('📊 DEBUG: Ejecutando consulta SQL con fechas:');
+    print('📊 DEBUG: startDate: $startDate');
+    print('📊 DEBUG: endDate: $endDate');
+
+    final result =
+        await (_database.select(_database.sales)
+              ..where(
+                (s) =>
+                    s.userId.equals(userId) &
+                    s.saleDate.isBiggerOrEqualValue(startDate) &
+                    s.saleDate.isSmallerOrEqualValue(endDate),
+              )
+              ..orderBy([(s) => OrderingTerm.desc(s.saleDate)]))
+            .get();
+
+    print('📊 DEBUG: Resultado de la consulta: ${result.length} ventas');
+    for (final sale in result) {
+      print('📊 DEBUG: - Venta: ${sale.id}, Fecha: ${sale.saleDate}');
+    }
+
+    return result;
   }
 
   /// Get sale by ID

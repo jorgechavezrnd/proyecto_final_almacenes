@@ -602,6 +602,36 @@ class InventoryRepository {
     return await _salesDao.getSalesByUser(userId);
   }
 
+  /// Get sales by user and date range
+  Future<List<Sale>> getSalesByUserAndDateRange(
+    String userId,
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    print('🔍 DEBUG: Buscando ventas para usuario: $userId');
+    print(
+      '🔍 DEBUG: Rango de fechas: ${startDate.toString()} hasta ${endDate.toString()}',
+    );
+
+    // Obtener todas las ventas del usuario primero para debug
+    final allUserSales = await _salesDao.getSalesByUser(userId);
+    print('🔍 DEBUG: Total ventas del usuario: ${allUserSales.length}');
+    for (final sale in allUserSales) {
+      print(
+        '🔍 DEBUG: Venta ID: ${sale.id}, Fecha: ${sale.saleDate.toString()}',
+      );
+    }
+
+    final filteredSales = await _salesDao.getSalesByUserAndDateRange(
+      userId,
+      startDate,
+      endDate,
+    );
+    print('🔍 DEBUG: Ventas filtradas por fecha: ${filteredSales.length}');
+
+    return filteredSales;
+  }
+
   /// Get sale with items
   Future<Map<String, dynamic>> getSaleWithItems(String saleId) async {
     return await _salesDao.getSaleWithItems(saleId);
