@@ -230,13 +230,11 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
     try {
       emit(const SalesLoading());
 
-      // Get current user and role
       final currentUser = await _authRepository.getCurrentUser();
       final userRole = await _authRepository.getUserRole();
 
       List<Sale> sales;
 
-      // If user is admin, show all sales. Otherwise, show only user's sales
       if (userRole?.toLowerCase() == 'admin') {
         sales = await _repository.getAllSales();
       } else if (currentUser != null) {
@@ -259,13 +257,11 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
     try {
       emit(const SalesLoading());
 
-      // Get current user and role
       final currentUser = await _authRepository.getCurrentUser();
       final userRole = await _authRepository.getUserRole();
 
       List<Sale> sales;
 
-      // If user is admin, show all sales. Otherwise, show only user's sales
       if (userRole?.toLowerCase() == 'admin') {
         sales = await _repository.getSalesByDateRange(
           event.startDate,

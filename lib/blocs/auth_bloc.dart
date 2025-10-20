@@ -176,7 +176,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (result.isSuccess && result.user != null) {
         emit(AuthProfileUpdated(user: result.user!));
 
-        // Return to authenticated state
         final role = await _authRepository.getUserRole();
         emit(AuthAuthenticated(user: result.user!, role: role));
       } else {

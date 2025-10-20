@@ -16,11 +16,9 @@ class UserSessionDao {
 
     if (sessions.isEmpty) return null;
 
-    // Return the most recent session
     sessions.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     final session = sessions.first;
 
-    // Check if session is still valid
     if (session.expiresAt.isBefore(DateTime.now())) {
       await deleteSession(session.id);
       return null;

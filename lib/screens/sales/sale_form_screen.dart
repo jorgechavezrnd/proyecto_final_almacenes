@@ -683,7 +683,6 @@ class _SaleFormScreenState extends State<SaleFormScreen> {
         )
         .toList();
 
-    // Get current user from AuthBloc
     final authState = context.read<AuthBloc>().state;
     String? currentUserId;
 

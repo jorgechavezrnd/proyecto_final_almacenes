@@ -65,7 +65,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
           picked.start.month,
           picked.start.day,
         );
-        // Asegurar que la fecha de fin sea a las 23:59:59 para incluir todo el día
         _endDate = DateTime(
           picked.end.year,
           picked.end.month,

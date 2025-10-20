@@ -330,7 +330,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ) async {
     try {
       if (event.query.isEmpty) {
-        // If query is empty, reload all products
         add(LoadProducts(warehouseId: event.warehouseId));
         return;
       }

@@ -85,7 +85,6 @@ class InventoryRepository {
     String? email,
   }) async {
     try {
-      // Create locally first (offline-first)
       final localId = await _warehouseDao.createWarehouse(
         name: name,
         description: description,
@@ -205,13 +204,11 @@ class InventoryRepository {
     String unit = 'unit',
   }) async {
     try {
-      // Check if SKU already exists
       final existingSku = await _productDao.skuExists(sku);
       if (existingSku) {
         return InventoryResult.error('SKU already exists');
       }
 
-      // Create locally first
       final localId = await _productDao.createProduct(
         warehouseId: warehouseId,
         name: name,
@@ -807,10 +804,8 @@ class InventoryRepository {
 
   /// Get all sales grouped by user (for admin reports)
   Future<Map<String, List<Sale>>> getAllSalesByUser() async {
-    // Get all sales
     final allSales = await _salesDao.getAllSales();
 
-    // Group sales by user ID first
     final Map<String, List<Sale>> salesByUserId = {};
     for (final sale in allSales) {
       if (sale.userId.isNotEmpty) {
@@ -851,7 +846,6 @@ class InventoryRepository {
     DateTime startDate,
     DateTime endDate,
   ) async {
-    // Adjust dates to cover the entire day
     final adjustedStartDate = DateTime(
       startDate.year,
       startDate.month,
@@ -870,13 +864,11 @@ class InventoryRepository {
       999,
     );
 
-    // Get all sales in date range
     final allSales = await _salesDao.getSalesByDateRange(
       adjustedStartDate,
       adjustedEndDate,
     );
 
-    // Group sales by user ID first
     final Map<String, List<Sale>> salesByUserId = {};
     for (final sale in allSales) {
       if (sale.userId.isNotEmpty) {

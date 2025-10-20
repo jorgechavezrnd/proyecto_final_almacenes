@@ -22,20 +22,3 @@ class SupabaseConfig {
     );
   }
 }
-
-// TODO: 
-// 1. Go to https://supabase.com and create a new project
-// 2. Go to Project Settings > API
-// 3. Copy the Project URL and paste it as supabaseUrl
-// 4. Copy the anon/public key and paste it as supabaseAnonKey
-// 5. Set up authentication in Supabase dashboard:
-//    - Go to Authentication > Settings
-//    - Enable Email provider
-//    - Configure email templates if needed
-// 6. Create user roles table if needed:
-//    CREATE TABLE user_roles (
-//      id UUID REFERENCES auth.users ON DELETE CASCADE,
-//      role TEXT DEFAULT 'user',
-//      created_at TIMESTAMP DEFAULT NOW(),
-//      PRIMARY KEY (id)
-//    );
