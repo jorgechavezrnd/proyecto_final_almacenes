@@ -18,10 +18,6 @@ class SalesDao {
     DateTime startDate,
     DateTime endDate,
   ) async {
-    print('🔍 DAO: Filtering sales from $startDate to $endDate');
-    print('🔍 DAO: Start timestamp: ${startDate.millisecondsSinceEpoch}');
-    print('🔍 DAO: End timestamp: ${endDate.millisecondsSinceEpoch}');
-
     final result =
         await (_database.select(_database.sales)
               ..where(
@@ -31,13 +27,6 @@ class SalesDao {
               )
               ..orderBy([(s) => OrderingTerm.desc(s.saleDate)]))
             .get();
-
-    print('🔍 DAO: Found ${result.length} sales in date range');
-    for (final sale in result) {
-      print(
-        '🔍 DAO: Sale ID ${sale.id}, Date: ${sale.saleDate}, Timestamp: ${sale.saleDate.millisecondsSinceEpoch}',
-      );
-    }
 
     return result;
   }
@@ -64,10 +53,6 @@ class SalesDao {
     DateTime startDate,
     DateTime endDate,
   ) async {
-    print('📊 DEBUG: Ejecutando consulta SQL con fechas:');
-    print('📊 DEBUG: startDate: $startDate');
-    print('📊 DEBUG: endDate: $endDate');
-
     final result =
         await (_database.select(_database.sales)
               ..where(
@@ -78,11 +63,6 @@ class SalesDao {
               )
               ..orderBy([(s) => OrderingTerm.desc(s.saleDate)]))
             .get();
-
-    print('📊 DEBUG: Resultado de la consulta: ${result.length} ventas');
-    for (final sale in result) {
-      print('📊 DEBUG: - Venta: ${sale.id}, Fecha: ${sale.saleDate}');
-    }
 
     return result;
   }

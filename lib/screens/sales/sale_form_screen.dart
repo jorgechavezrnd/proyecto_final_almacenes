@@ -683,12 +683,6 @@ class _SaleFormScreenState extends State<SaleFormScreen> {
         )
         .toList();
 
-    // Debug: Print items before sending
-    print('DEBUG: Creating sale with ${items.length} items:');
-    for (int i = 0; i < items.length; i++) {
-      print('  Item $i: ${items[i]}');
-    }
-
     // Get current user from AuthBloc
     final authState = context.read<AuthBloc>().state;
     String? currentUserId;

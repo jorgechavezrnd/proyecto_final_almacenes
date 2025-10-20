@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../database/database.dart';
 import '../repositories/inventory_repository.dart';
+import '../repositories/auth_repository.dart';
 
 // ============================================================================
 // EVENTS
@@ -209,8 +210,10 @@ class SalesSync extends SalesState {
 
 class SalesBloc extends Bloc<SalesEvent, SalesState> {
   final InventoryRepository _repository;
+  final AuthRepository _authRepository;
 
-  SalesBloc(this._repository) : super(const SalesInitial()) {
+  SalesBloc(this._repository, this._authRepository)
+    : super(const SalesInitial()) {
     on<LoadSales>(_onLoadSales);
     on<LoadSalesByDateRange>(_onLoadSalesByDateRange);
     on<LoadSalesByWarehouse>(_onLoadSalesByWarehouse);
@@ -226,7 +229,23 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
   Future<void> _onLoadSales(LoadSales event, Emitter<SalesState> emit) async {
     try {
       emit(const SalesLoading());
-      final sales = await _repository.getAllSales();
+
+      // Get current user and role
+      final currentUser = await _authRepository.getCurrentUser();
+      final userRole = await _authRepository.getUserRole();
+
+      List<Sale> sales;
+
+      // If user is admin, show all sales. Otherwise, show only user's sales
+      if (userRole?.toLowerCase() == 'admin') {
+        sales = await _repository.getAllSales();
+      } else if (currentUser != null) {
+        sales = await _repository.getSalesByUser(currentUser.id);
+      } else {
+        emit(const SalesError('Usuario no autenticado'));
+        return;
+      }
+
       emit(SalesLoaded(sales));
     } catch (e) {
       emit(SalesError('Error loading sales: $e'));
@@ -239,10 +258,30 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
   ) async {
     try {
       emit(const SalesLoading());
-      final sales = await _repository.getSalesByDateRange(
-        event.startDate,
-        event.endDate,
-      );
+
+      // Get current user and role
+      final currentUser = await _authRepository.getCurrentUser();
+      final userRole = await _authRepository.getUserRole();
+
+      List<Sale> sales;
+
+      // If user is admin, show all sales. Otherwise, show only user's sales
+      if (userRole?.toLowerCase() == 'admin') {
+        sales = await _repository.getSalesByDateRange(
+          event.startDate,
+          event.endDate,
+        );
+      } else if (currentUser != null) {
+        sales = await _repository.getSalesByUserAndDateRange(
+          currentUser.id,
+          event.startDate,
+          event.endDate,
+        );
+      } else {
+        emit(const SalesError('Usuario no autenticado'));
+        return;
+      }
+
       emit(SalesLoaded(sales));
     } catch (e) {
       emit(SalesError('Error loading sales by date range: $e'));

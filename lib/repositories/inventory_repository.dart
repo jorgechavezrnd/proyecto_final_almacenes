@@ -42,10 +42,7 @@ class InventoryRepository {
       await (_database.select(_database.inventoryMovements)..limit(1)).get();
       await (_database.select(_database.sales)..limit(1)).get();
       await (_database.select(_database.saleItems)..limit(1)).get();
-
-      print('Database tables verified successfully');
     } catch (e) {
-      print('Database initialization error: $e');
       // The error indicates tables don't exist, but Drift should handle this
       // through the migration strategy. If this error persists, the database
       // file might be corrupted and need to be deleted.
@@ -419,7 +416,6 @@ class InventoryRepository {
   /// Sync product to server
   Future<void> _syncProductToServer(Product product) async {
     try {
-      print('DEBUG: Preparing to sync product ${product.id} to Supabase');
       final data = {
         'id': product.id,
         'warehouse_id': product.warehouseId,
@@ -439,29 +435,18 @@ class InventoryRepository {
         'updated_at': product.updatedAt.toIso8601String(),
       };
 
-      print('DEBUG: Syncing product data: $data');
-
       // Try to update first, if it fails, try to insert
       try {
-        final updateResponse = await _supabaseService.client
+        await _supabaseService.client
             .from('products')
             .update(data)
             .eq('id', product.id);
-        print('DEBUG: Update response: $updateResponse');
       } catch (updateError) {
-        print('DEBUG: Update failed, trying insert: $updateError');
-        final insertResponse = await _supabaseService.client
-            .from('products')
-            .insert(data);
-        print('DEBUG: Insert response: $insertResponse');
+        await _supabaseService.client.from('products').insert(data);
       }
 
-      print('DEBUG: Product ${product.id} successfully synced to Supabase');
-
       await _productDao.markAsSynced(product.id);
-      print('DEBUG: Product ${product.id} marked as synced locally');
     } catch (e) {
-      print('ERROR: Failed to sync product ${product.id}: $e');
       rethrow;
     }
   }
@@ -609,26 +594,11 @@ class InventoryRepository {
     DateTime startDate,
     DateTime endDate,
   ) async {
-    print('🔍 DEBUG: Buscando ventas para usuario: $userId');
-    print(
-      '🔍 DEBUG: Rango de fechas: ${startDate.toString()} hasta ${endDate.toString()}',
-    );
-
-    // Obtener todas las ventas del usuario primero para debug
-    final allUserSales = await _salesDao.getSalesByUser(userId);
-    print('🔍 DEBUG: Total ventas del usuario: ${allUserSales.length}');
-    for (final sale in allUserSales) {
-      print(
-        '🔍 DEBUG: Venta ID: ${sale.id}, Fecha: ${sale.saleDate.toString()}',
-      );
-    }
-
     final filteredSales = await _salesDao.getSalesByUserAndDateRange(
       userId,
       startDate,
       endDate,
     );
-    print('🔍 DEBUG: Ventas filtradas por fecha: ${filteredSales.length}');
 
     return filteredSales;
   }
@@ -699,26 +669,15 @@ class InventoryRepository {
           final affectedProductIds = items
               .map((item) => item['productId'] as String)
               .toSet();
-          print(
-            'DEBUG: Syncing ${affectedProductIds.length} affected products: $affectedProductIds',
-          );
           for (final productId in affectedProductIds) {
             final product = await _productDao.getProductById(productId);
             if (product != null) {
-              print(
-                'DEBUG: Syncing product ${product.name} (ID: ${product.id}) with quantity: ${product.quantity}',
-              );
               await _syncProductToServer(product);
-              print('DEBUG: Successfully synced product ${product.id}');
-            } else {
-              print('ERROR: Product not found: $productId');
             }
           }
         }
       } catch (syncError) {
         // Continue even if sync fails (offline-first)
-        print('Sync failed: $syncError');
-        print('Stack trace: ${StackTrace.current}');
       }
 
       return InventoryResult.success(saleId);
@@ -738,7 +697,6 @@ class InventoryRepository {
           await _supabaseService.client.from('sales').delete().eq('id', saleId);
         } catch (syncError) {
           // Continue even if sync fails
-          print('Delete sync failed: $syncError');
         }
 
         return InventoryResult.success(true);
@@ -852,15 +810,6 @@ class InventoryRepository {
     // Get all sales
     final allSales = await _salesDao.getAllSales();
 
-    print(
-      '🔍 ADMIN REPORTS: Found ${allSales.length} total sales (no date filter)',
-    );
-    for (final sale in allSales) {
-      print(
-        '🔍 ADMIN REPORTS: Sale ID ${sale.id}, Date: ${sale.saleDate}, User: ${sale.userId}',
-      );
-    }
-
     // Group sales by user ID first
     final Map<String, List<Sale>> salesByUserId = {};
     for (final sale in allSales) {
@@ -888,7 +837,6 @@ class InventoryRepository {
         );
         userName = user.userName.isNotEmpty ? user.userName : user.email;
       } catch (e) {
-        print('Warning: Could not get user name for ID $userId: $e');
         // Keep userId as fallback
       }
 
@@ -903,8 +851,6 @@ class InventoryRepository {
     DateTime startDate,
     DateTime endDate,
   ) async {
-    print('🔍 ADMIN REPORTS: Filtering sales from $startDate to $endDate');
-
     // Adjust dates to cover the entire day
     final adjustedStartDate = DateTime(
       startDate.year,
@@ -924,22 +870,11 @@ class InventoryRepository {
       999,
     );
 
-    print(
-      '🔍 ADMIN REPORTS: Adjusted range from $adjustedStartDate to $adjustedEndDate',
-    );
-
     // Get all sales in date range
     final allSales = await _salesDao.getSalesByDateRange(
       adjustedStartDate,
       adjustedEndDate,
     );
-
-    print('🔍 ADMIN REPORTS: Found ${allSales.length} sales in date range');
-    for (final sale in allSales) {
-      print(
-        '🔍 ADMIN REPORTS: Sale ID ${sale.id}, Date: ${sale.saleDate}, User: ${sale.userId}',
-      );
-    }
 
     // Group sales by user ID first
     final Map<String, List<Sale>> salesByUserId = {};
@@ -968,7 +903,6 @@ class InventoryRepository {
         );
         userName = user.userName.isNotEmpty ? user.userName : user.email;
       } catch (e) {
-        print('Warning: Could not get user name for ID $userId: $e');
         // Keep userId as fallback
       }
 

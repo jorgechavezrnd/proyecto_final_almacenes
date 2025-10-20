@@ -75,9 +75,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
           59,
         );
       });
-      print(
-        '🔍 DEBUG: Fechas seleccionadas - Inicio: $_startDate, Fin: $_endDate',
-      );
       _loadReports();
     }
   }

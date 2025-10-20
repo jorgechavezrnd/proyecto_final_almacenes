@@ -228,35 +228,29 @@ class AuthRepository {
         );
       }
 
-      print('🔍 Intentando obtener usuarios de Supabase Authentication...');
-
       // Method 1: Try RPC function to access auth.users directly
       try {
         final users = await _getUsersFromRPC();
         if (users.isNotEmpty) {
-          print('✅ Users loaded from RPC function: ${users.length}');
           return users;
         }
       } catch (e) {
-        print('❌ RPC method failed: $e');
+        // Method failed, continue to next
       }
 
       // Method 2: Try using Admin API (if service role key is available)
       try {
         final users = await _getUsersFromAdminAPI();
         if (users.isNotEmpty) {
-          print('✅ Users loaded from Admin API: ${users.length}');
           return users;
         }
       } catch (e) {
-        print('❌ Admin API method failed: $e');
+        // Method failed, continue to fallback
       }
 
       // Fallback: Return enhanced mock data that simulates real users
-      print('⚠️ Supabase methods failed, using enhanced mock data');
       return await _getEnhancedMockUsers();
     } catch (e) {
-      print('Error getting all users: $e');
       return await _getEnhancedMockUsers();
     }
   }
@@ -270,8 +264,6 @@ class AuthRepository {
       );
       return _parseUsersFromResponse(response);
     } catch (e) {
-      print('❌ Main RPC failed: $e');
-
       // Try the alternative JSON RPC function
       try {
         final jsonResponse = await _supabaseService.client.rpc(
@@ -287,7 +279,6 @@ class AuthRepository {
           return _parseUsersFromResponse(userData);
         }
       } catch (e2) {
-        print('❌ Alternative RPC also failed: $e2');
         rethrow;
       }
     }
@@ -326,7 +317,7 @@ class AuthRepository {
               userData['last_sign_in_at'].toString(),
             );
           } catch (e) {
-            print('Error parsing last_sign_in_at: $e');
+            // Error parsing date, continue without it
           }
         }
 
@@ -336,7 +327,7 @@ class AuthRepository {
           try {
             createdAt = DateTime.parse(userData['created_at'].toString());
           } catch (e) {
-            print('Error parsing created_at: $e');
+            // Error parsing date, continue without it
           }
         }
 
@@ -350,11 +341,8 @@ class AuthRepository {
         );
 
         users.add(userModel);
-        print(
-          '✅ Parsed user: ${userModel.email} - ${userModel.userName} - Last login: ${userModel.lastSignInAt}',
-        );
       } catch (e) {
-        print('❌ Error parsing user ${userData['id']}: $e');
+        // Error parsing user, skip this entry
       }
     }
     return users;
@@ -388,12 +376,11 @@ class AuthRepository {
           });
           users.add(userModel);
         } catch (e) {
-          print('Error parsing admin API user ${userData['id']}: $e');
+          // Error parsing user, skip this entry
         }
       }
       return users;
     } catch (e) {
-      print('Admin API access failed: $e');
       return [];
     }
   }

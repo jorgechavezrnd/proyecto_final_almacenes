@@ -23,11 +23,7 @@ void main() async {
   try {
     await dotenv.load(fileName: ".env");
   } catch (e) {
-    // If .env file doesn't exist, show error
-    print('Error loading .env file: $e');
-    print(
-      'Make sure to create a .env file in the project root with your Supabase credentials',
-    );
+    // If .env file doesn't exist, continue without it (using defaults)
   }
 
   // Initialize Supabase with environment variables
@@ -67,7 +63,8 @@ class MainApp extends StatelessWidget {
               ProductBloc(repository: InventoryRepository.instance),
         ),
         BlocProvider(
-          create: (context) => SalesBloc(InventoryRepository.instance),
+          create: (context) =>
+              SalesBloc(InventoryRepository.instance, AuthRepository.instance),
         ),
       ],
       child: MaterialApp(

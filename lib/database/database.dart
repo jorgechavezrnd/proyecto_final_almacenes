@@ -147,18 +147,14 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
-        print('Creating database tables...');
         await m.createAll();
-        print('Database tables created successfully.');
       },
       onUpgrade: (Migrator m, int from, int to) async {
         // Handle database migrations here
-        print('Upgrading database from version $from to $to');
       },
       beforeOpen: (details) async {
         // Enable foreign keys
         await customStatement('PRAGMA foreign_keys = ON');
-        print('Database opened with foreign keys enabled');
       },
     );
   }
@@ -185,6 +181,5 @@ Future<void> resetDatabase() async {
   final file = File(p.join(dbFolder.path, 'app_database.sqlite'));
   if (await file.exists()) {
     await file.delete();
-    print('Database file deleted for reset');
   }
 }

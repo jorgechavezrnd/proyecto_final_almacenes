@@ -40,7 +40,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
         LoadAdminSalesReport(startDate: _startDate, endDate: _endDate),
       );
     } catch (e) {
-      print('Error loading admin reports: $e');
+      // Error loading reports
     }
   }
 
@@ -101,7 +101,6 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
       // Después de imprimir, restaurar el estado anterior
       _restorePreviousState();
     } catch (e) {
-      print('Error printing PDF: $e');
       // Si hay error, también restaurar el estado
       _restorePreviousState();
     }

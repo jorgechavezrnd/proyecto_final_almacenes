@@ -218,7 +218,6 @@ class DashboardScreen extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) => BlocProvider(
                     create: (context) {
-                      print('Creating ReportsBloc for AdminReportsScreen...');
                       return ReportsBloc(
                         repository: InventoryRepository.instance,
                         authRepository: AuthRepository.instance,
@@ -229,7 +228,6 @@ class DashboardScreen extends StatelessWidget {
                 ),
               );
             } catch (e) {
-              print('Error navigating to admin reports: $e');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Error: $e'),
