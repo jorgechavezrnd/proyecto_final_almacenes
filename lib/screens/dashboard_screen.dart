@@ -11,6 +11,7 @@ import 'login_screen.dart';
 import 'warehouse_list_screen.dart';
 import 'sales/sales_screen.dart';
 import 'reports/reports_screen.dart';
+import 'users/users_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -237,7 +238,10 @@ class DashboardScreen extends StatelessWidget {
           icon: Icons.people,
           color: Colors.purple,
           onTap: () {
-            _showComingSoon(context, 'Gestión de Usuarios');
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const UsersScreen()),
+            );
           },
         ),
         _buildActionCard(
