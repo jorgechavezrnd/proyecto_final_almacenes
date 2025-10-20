@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/auth_bloc.dart';
-import '../bloc/auth_event.dart';
-import '../bloc/auth_state.dart';
+import '../blocs/auth_bloc.dart';
+import '../blocs/auth_event.dart';
+import '../blocs/auth_state.dart';
 import 'dashboard_screen.dart';
 import 'signup_screen.dart';
 

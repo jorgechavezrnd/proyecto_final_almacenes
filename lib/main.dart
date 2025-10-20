@@ -4,14 +4,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'services/supabase_service.dart';
 import 'repositories/auth_repository.dart';
 import 'repositories/inventory_repository.dart';
-import 'bloc/auth_bloc.dart';
-import 'bloc/auth_event.dart';
+import 'blocs/auth_bloc.dart';
+import 'blocs/auth_event.dart';
 import 'blocs/warehouse_bloc.dart';
 import 'blocs/product_bloc.dart';
 import 'blocs/sales_bloc.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
-import 'bloc/auth_state.dart' as auth_states;
+import 'blocs/auth_state.dart' as auth_states;
 import 'config/supabase_config.dart';
 import 'database/database.dart';
 

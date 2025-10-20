@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/sales_bloc.dart';
-import '../../bloc/auth_bloc.dart';
-import '../../bloc/auth_state.dart';
+import '../../blocs/auth_bloc.dart';
+import '../../blocs/auth_state.dart';
 import '../../database/database.dart';
 import '../../repositories/inventory_repository.dart';
 
