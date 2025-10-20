@@ -4,6 +4,7 @@ import '../database/warehouse_dao.dart';
 import '../database/product_dao.dart';
 import '../database/sales_dao.dart';
 import '../services/supabase_service.dart';
+import 'auth_repository.dart';
 
 /// Repository for managing inventory operations with offline-first architecture
 class InventoryRepository {
@@ -844,6 +845,111 @@ class InventoryRepository {
   Future<void> _upsertSaleItemFromServer(Map<String, dynamic> data) async {
     // Use SalesDao method instead of direct database access
     await _salesDao.upsertSaleItemFromServer(data);
+  }
+
+  /// Get all sales grouped by user (for admin reports)
+  Future<Map<String, List<Sale>>> getAllSalesByUser() async {
+    // Get all sales
+    final allSales = await _salesDao.getAllSales();
+    
+    print('🔍 ADMIN REPORTS: Found ${allSales.length} total sales (no date filter)');
+    for (final sale in allSales) {
+      print('🔍 ADMIN REPORTS: Sale ID ${sale.id}, Date: ${sale.saleDate}, User: ${sale.userId}');
+    }
+    
+    // Group sales by user ID first
+    final Map<String, List<Sale>> salesByUserId = {};
+    for (final sale in allSales) {
+      if (sale.userId.isNotEmpty) {
+        salesByUserId.putIfAbsent(sale.userId, () => []).add(sale);
+      }
+    }
+    
+    // Convert user IDs to user names using AuthRepository
+    final Map<String, List<Sale>> salesByUserName = {};
+    final authRepo = AuthRepository.instance;
+    
+    for (final entry in salesByUserId.entries) {
+      final userId = entry.key;
+      final sales = entry.value;
+      
+      // Try to get user name from Supabase
+      String userName = userId; // fallback to user ID
+      try {
+        // Get all users to find the user name for this ID
+        final users = await authRepo.getAllUsers();
+        final user = users.firstWhere(
+          (user) => user.id == userId,
+          orElse: () => throw Exception('User not found'),
+        );
+        userName = user.userName.isNotEmpty ? user.userName : user.email;
+      } catch (e) {
+        print('Warning: Could not get user name for ID $userId: $e');
+        // Keep userId as fallback
+      }
+      
+      salesByUserName[userName] = sales;
+    }
+    
+    return salesByUserName;
+  }
+
+  /// Get all sales grouped by user and filtered by date range (for admin reports)
+  Future<Map<String, List<Sale>>> getAllSalesByUserAndDateRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    print('🔍 ADMIN REPORTS: Filtering sales from $startDate to $endDate');
+    
+    // Adjust dates to cover the entire day
+    final adjustedStartDate = DateTime(startDate.year, startDate.month, startDate.day, 0, 0, 0);
+    final adjustedEndDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59, 999);
+    
+    print('🔍 ADMIN REPORTS: Adjusted range from $adjustedStartDate to $adjustedEndDate');
+    
+    // Get all sales in date range
+    final allSales = await _salesDao.getSalesByDateRange(adjustedStartDate, adjustedEndDate);
+    
+    print('🔍 ADMIN REPORTS: Found ${allSales.length} sales in date range');
+    for (final sale in allSales) {
+      print('🔍 ADMIN REPORTS: Sale ID ${sale.id}, Date: ${sale.saleDate}, User: ${sale.userId}');
+    }
+    
+    // Group sales by user ID first
+    final Map<String, List<Sale>> salesByUserId = {};
+    for (final sale in allSales) {
+      if (sale.userId.isNotEmpty) {
+        salesByUserId.putIfAbsent(sale.userId, () => []).add(sale);
+      }
+    }
+    
+    // Convert user IDs to user names using AuthRepository
+    final Map<String, List<Sale>> salesByUserName = {};
+    final authRepo = AuthRepository.instance;
+    
+    for (final entry in salesByUserId.entries) {
+      final userId = entry.key;
+      final sales = entry.value;
+      
+      // Try to get user name from Supabase
+      String userName = userId; // fallback to user ID
+      try {
+        // Get all users to find the user name for this ID
+        final users = await authRepo.getAllUsers();
+        final user = users.firstWhere(
+          (user) => user.id == userId,
+          orElse: () => throw Exception('User not found'),
+        );
+        userName = user.userName.isNotEmpty ? user.userName : user.email;
+      } catch (e) {
+        print('Warning: Could not get user name for ID $userId: $e');
+        // Keep userId as fallback
+      }
+      
+      salesByUserName[userName] = sales;
+    }
+    
+    return salesByUserName;
   }
 }
 

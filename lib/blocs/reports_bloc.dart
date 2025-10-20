@@ -67,6 +67,46 @@ class RestoreSalesReportView extends ReportsEvent {
   ];
 }
 
+class LoadAdminSalesReport extends ReportsEvent {
+  final DateTime? startDate;
+  final DateTime? endDate;
+
+  const LoadAdminSalesReport({this.startDate, this.endDate});
+
+  @override
+  List<Object?> get props => [startDate, endDate];
+}
+
+class GenerateAdminSalesReportPdf extends ReportsEvent {
+  final Map<String, List<Sale>> salesByUser;
+  final DateTime? startDate;
+  final DateTime? endDate;
+
+  const GenerateAdminSalesReportPdf({
+    required this.salesByUser,
+    this.startDate,
+    this.endDate,
+  });
+
+  @override
+  List<Object?> get props => [salesByUser, startDate, endDate];
+}
+
+class RestoreAdminSalesReportView extends ReportsEvent {
+  final Map<String, List<Sale>> salesByUser;
+  final DateTime? startDate;
+  final DateTime? endDate;
+
+  const RestoreAdminSalesReportView({
+    required this.salesByUser,
+    this.startDate,
+    this.endDate,
+  });
+
+  @override
+  List<Object?> get props => [salesByUser, startDate, endDate];
+}
+
 // States
 abstract class ReportsState extends Equatable {
   const ReportsState();
@@ -116,6 +156,21 @@ class UserSalesReportLoaded extends ReportsState {
   ];
 }
 
+class AdminSalesReportLoaded extends ReportsState {
+  final Map<String, List<Sale>> salesByUser;
+  final DateTime? startDate;
+  final DateTime? endDate;
+
+  const AdminSalesReportLoaded({
+    required this.salesByUser,
+    this.startDate,
+    this.endDate,
+  });
+
+  @override
+  List<Object?> get props => [salesByUser, startDate, endDate];
+}
+
 class ReportPdfGenerated extends ReportsState {
   final Uint8List pdfBytes;
   final String fileName;
@@ -149,6 +204,9 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     on<LoadUserSalesReport>(_onLoadUserSalesReport);
     on<GenerateSalesReportPdf>(_onGenerateSalesReportPdf);
     on<RestoreSalesReportView>(_onRestoreSalesReportView);
+    on<LoadAdminSalesReport>(_onLoadAdminSalesReport);
+    on<GenerateAdminSalesReportPdf>(_onGenerateAdminSalesReportPdf);
+    on<RestoreAdminSalesReportView>(_onRestoreAdminSalesReportView);
   }
 
   Future<void> _onLoadUserSalesReport(
@@ -276,6 +334,100 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         startDate: event.startDate,
         endDate: event.endDate,
         userName: event.userName,
+      ),
+    );
+  }
+
+  Future<void> _onLoadAdminSalesReport(
+    LoadAdminSalesReport event,
+    Emitter<ReportsState> emit,
+  ) async {
+    try {
+      emit(ReportsLoading());
+
+      // Check user role - only admin users can generate admin reports
+      final userRole = await _authRepository.getUserRole();
+      if (userRole == null) {
+        emit(const ReportsAccessDenied('Usuario no autenticado'));
+        return;
+      }
+
+      if (userRole != 'admin') {
+        emit(
+          const ReportsAccessDenied(
+            'Solo los administradores pueden acceder a reportes administrativos.',
+          ),
+        );
+        return;
+      }
+
+      // Get all sales from all non-admin users
+      Map<String, List<Sale>> salesByUser;
+      if (event.startDate != null && event.endDate != null) {
+        salesByUser = await _repository.getAllSalesByUserAndDateRange(
+          event.startDate!,
+          event.endDate!,
+        );
+      } else {
+        salesByUser = await _repository.getAllSalesByUser();
+      }
+
+      emit(
+        AdminSalesReportLoaded(
+          salesByUser: salesByUser,
+          startDate: event.startDate,
+          endDate: event.endDate,
+        ),
+      );
+    } catch (e) {
+      emit(ReportsError('Error al cargar el reporte administrativo: $e'));
+    }
+  }
+
+  Future<void> _onGenerateAdminSalesReportPdf(
+    GenerateAdminSalesReportPdf event,
+    Emitter<ReportsState> emit,
+  ) async {
+    try {
+      emit(ReportsLoading());
+
+      // Check access again
+      final userRole = await _authRepository.getUserRole();
+      if (userRole != 'admin') {
+        emit(
+          const ReportsAccessDenied(
+            'Solo los administradores pueden generar reportes PDF administrativos.',
+          ),
+        );
+        return;
+      }
+
+      // Generate PDF
+      final pdfService = PdfReportService();
+      final pdfBytes = await pdfService.generateAdminSalesReport(
+        salesByUser: event.salesByUser,
+        startDate: event.startDate,
+        endDate: event.endDate,
+      );
+
+      final fileName =
+          'reporte_admin_ventas_${DateTime.now().millisecondsSinceEpoch}.pdf';
+
+      emit(ReportPdfGenerated(pdfBytes: pdfBytes, fileName: fileName));
+    } catch (e) {
+      emit(ReportsError('Error al generar PDF administrativo: $e'));
+    }
+  }
+
+  Future<void> _onRestoreAdminSalesReportView(
+    RestoreAdminSalesReportView event,
+    Emitter<ReportsState> emit,
+  ) async {
+    emit(
+      AdminSalesReportLoaded(
+        salesByUser: event.salesByUser,
+        startDate: event.startDate,
+        endDate: event.endDate,
       ),
     );
   }

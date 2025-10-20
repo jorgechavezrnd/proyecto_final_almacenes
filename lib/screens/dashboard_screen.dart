@@ -11,6 +11,7 @@ import 'login_screen.dart';
 import 'warehouse_list_screen.dart';
 import 'sales/sales_screen.dart';
 import 'reports/reports_screen.dart';
+import 'reports/admin_reports_screen.dart';
 import 'users/users_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -256,8 +257,32 @@ class DashboardScreen extends StatelessWidget {
           title: 'Reportes Admin',
           icon: Icons.analytics,
           color: Colors.red,
-          onTap: () {
-            _showComingSoon(context, 'Reportes de Administrador');
+          onTap: () async {
+            try {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BlocProvider(
+                    create: (context) {
+                      print('Creating ReportsBloc for AdminReportsScreen...');
+                      return ReportsBloc(
+                        repository: InventoryRepository.instance,
+                        authRepository: AuthRepository.instance,
+                      );
+                    },
+                    child: const AdminReportsScreen(),
+                  ),
+                ),
+              );
+            } catch (e) {
+              print('Error navigating to admin reports: $e');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error: $e'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
           },
         ),
         _buildActionCard(

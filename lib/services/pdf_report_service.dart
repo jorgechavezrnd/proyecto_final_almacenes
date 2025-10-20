@@ -239,4 +239,261 @@ class PdfReportService {
         return paymentMethod;
     }
   }
+
+  /// Generate admin sales report PDF with data from all users
+  Future<Uint8List> generateAdminSalesReport({
+    required Map<String, List<Sale>> salesByUser,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final pdf = pw.Document();
+
+    // Calculate overall totals
+    final allSales = salesByUser.values.expand((sales) => sales).toList();
+    final totalAmount = allSales.fold<double>(
+      0.0,
+      (sum, sale) => sum + sale.totalAmount,
+    );
+    final totalSales = allSales.length;
+    final totalUsers = salesByUser.length;
+
+    // Determine date range text
+    String dateRangeText;
+    if (startDate != null && endDate != null) {
+      dateRangeText =
+          'Del ${_dateFormatter.format(startDate)} al ${_dateFormatter.format(endDate)}';
+    } else {
+      dateRangeText = 'Todas las ventas';
+    }
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        build: (pw.Context context) {
+          return [
+            // Header
+            _buildAdminHeader(dateRangeText),
+            pw.SizedBox(height: 20),
+
+            // Summary
+            _buildAdminSummary(totalSales, totalAmount, totalUsers),
+            pw.SizedBox(height: 30),
+
+            // Sales by user
+            _buildSalesByUserSection(salesByUser),
+          ];
+        },
+      ),
+    );
+
+    return pdf.save();
+  }
+
+  pw.Widget _buildAdminHeader(String dateRangeText) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          'REPORTE ADMINISTRATIVO DE VENTAS',
+          style: pw.TextStyle(
+            fontSize: 20,
+            fontWeight: pw.FontWeight.bold,
+          ),
+        ),
+        pw.SizedBox(height: 8),
+        pw.Text(
+          'Sistema de Almacenes',
+          style: pw.TextStyle(
+            fontSize: 14,
+            color: PdfColors.grey600,
+          ),
+        ),
+        pw.SizedBox(height: 4),
+        pw.Text(
+          'Período: $dateRangeText',
+          style: pw.TextStyle(
+            fontSize: 12,
+            color: PdfColors.grey700,
+          ),
+        ),
+        pw.SizedBox(height: 4),
+        pw.Text(
+          'Generado: ${_dateFormatter.format(DateTime.now())}',
+          style: pw.TextStyle(
+            fontSize: 12,
+            color: PdfColors.grey700,
+          ),
+        ),
+        pw.Divider(thickness: 2),
+      ],
+    );
+  }
+
+  pw.Widget _buildAdminSummary(int totalSales, double totalAmount, int totalUsers) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(16),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.grey300),
+        borderRadius: pw.BorderRadius.circular(8),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            'RESUMEN GENERAL',
+            style: pw.TextStyle(
+              fontSize: 16,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.blue800,
+            ),
+          ),
+          pw.SizedBox(height: 12),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+            children: [
+              _buildSummaryItem('Usuarios Activos', '$totalUsers'),
+              _buildSummaryItem('Total Ventas', '$totalSales'),
+              _buildSummaryItem('Ingresos Totales', _currencyFormatter.format(totalAmount)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _buildSummaryItem(String label, String value) {
+    return pw.Column(
+      children: [
+        pw.Text(
+          label,
+          style: pw.TextStyle(
+            fontSize: 10,
+            color: PdfColors.grey600,
+          ),
+        ),
+        pw.SizedBox(height: 4),
+        pw.Text(
+          value,
+          style: pw.TextStyle(
+            fontSize: 14,
+            fontWeight: pw.FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  pw.Widget _buildSalesByUserSection(Map<String, List<Sale>> salesByUser) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          'VENTAS POR USUARIO',
+          style: pw.TextStyle(
+            fontSize: 16,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColors.blue800,
+          ),
+        ),
+        pw.SizedBox(height: 16),
+        
+        // User summary table
+        pw.Table(
+          border: pw.TableBorder.all(color: PdfColors.grey300),
+          columnWidths: {
+            0: const pw.FlexColumnWidth(3),
+            1: const pw.FlexColumnWidth(2),
+            2: const pw.FlexColumnWidth(3),
+          },
+          children: [
+            // Header
+            pw.TableRow(
+              decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+              children: [
+                _buildTableCell('Usuario', isHeader: true),
+                _buildTableCell('Ventas', isHeader: true, textAlign: pw.TextAlign.center),
+                _buildTableCell('Total Vendido', isHeader: true, textAlign: pw.TextAlign.right),
+              ],
+            ),
+            // Data rows
+            ...salesByUser.entries.map((entry) {
+              final userName = entry.key;
+              final userSales = entry.value;
+              final userTotal = userSales.fold<double>(
+                0.0,
+                (sum, sale) => sum + sale.totalAmount,
+              );
+              
+              return pw.TableRow(
+                children: [
+                  _buildTableCell(userName),
+                  _buildTableCell('${userSales.length}', textAlign: pw.TextAlign.center),
+                  _buildTableCell(_currencyFormatter.format(userTotal), textAlign: pw.TextAlign.right),
+                ],
+              );
+            }).toList(),
+          ],
+        ),
+        
+        pw.SizedBox(height: 20),
+        
+        // Detailed sales by user
+        ...salesByUser.entries.map((entry) {
+          final userName = entry.key;
+          final userSales = entry.value;
+          
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.SizedBox(height: 20),
+              pw.Text(
+                'Ventas de $userName',
+                style: pw.TextStyle(
+                  fontSize: 14,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.blue700,
+                ),
+              ),
+              pw.SizedBox(height: 8),
+              
+              // Sales table for this user
+              pw.Table(
+                border: pw.TableBorder.all(color: PdfColors.grey300),
+                columnWidths: {
+                  0: const pw.FlexColumnWidth(2),
+                  1: const pw.FlexColumnWidth(3),
+                  2: const pw.FlexColumnWidth(2),
+                  3: const pw.FlexColumnWidth(3),
+                },
+                children: [
+                  // Header
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+                    children: [
+                      _buildTableCell('Venta #', isHeader: true),
+                      _buildTableCell('Fecha', isHeader: true),
+                      _buildTableCell('Método Pago', isHeader: true),
+                      _buildTableCell('Total', isHeader: true, textAlign: pw.TextAlign.right),
+                    ],
+                  ),
+                  // Sales data
+                  ...userSales.map((sale) {
+                    return pw.TableRow(
+                      children: [
+                        _buildTableCell(sale.id.toString()),
+                        _buildTableCell(_dateFormatter.format(sale.saleDate)),
+                        _buildTableCell(_getPaymentMethodName(sale.paymentMethod)),
+                        _buildTableCell(_currencyFormatter.format(sale.totalAmount), textAlign: pw.TextAlign.right),
+                      ],
+                    );
+                  }).toList(),
+                ],
+              ),
+            ],
+          );
+        }).toList(),
+      ],
+    );
+  }
 }
