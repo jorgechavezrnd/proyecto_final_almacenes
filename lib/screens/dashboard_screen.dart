@@ -171,36 +171,6 @@ class DashboardScreen extends StatelessWidget {
             mainAxisSpacing: 16,
             children: _buildActionCards(context, role),
           ),
-          const SizedBox(height: 24),
-
-          // Recent Activity (placeholder)
-          Text(
-            'Actividad Reciente',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.info, color: Colors.blue),
-                    title: const Text('Sistema iniciado'),
-                    subtitle: const Text('Bienvenido al sistema de almacenes'),
-                    trailing: Text(
-                      'Ahora',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -221,14 +191,6 @@ class DashboardScreen extends StatelessWidget {
           );
         },
       ),
-      _buildActionCard(
-        title: 'Productos',
-        icon: Icons.inventory_2,
-        color: Colors.green,
-        onTap: () {
-          _showComingSoon(context, 'Vista General de Productos');
-        },
-      ),
     ];
 
     // Acciones adicionales para administradores
@@ -243,14 +205,6 @@ class DashboardScreen extends StatelessWidget {
               context,
               MaterialPageRoute(builder: (context) => const UsersScreen()),
             );
-          },
-        ),
-        _buildActionCard(
-          title: 'Configuración',
-          icon: Icons.settings,
-          color: Colors.grey,
-          onTap: () {
-            _showComingSoon(context, 'Configuración');
           },
         ),
         _buildActionCard(
@@ -283,14 +237,6 @@ class DashboardScreen extends StatelessWidget {
                 ),
               );
             }
-          },
-        ),
-        _buildActionCard(
-          title: 'Auditoría',
-          icon: Icons.history,
-          color: Colors.orange,
-          onTap: () {
-            _showComingSoon(context, 'Auditoría del Sistema');
           },
         ),
       ]);
