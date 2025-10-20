@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'services/supabase_service.dart';
 import 'repositories/auth_repository.dart';
+import 'repositories/inventory_repository.dart';
 import 'bloc/auth_bloc.dart';
 import 'bloc/auth_event.dart';
+import 'blocs/warehouse_bloc.dart';
+import 'blocs/product_bloc.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'bloc/auth_state.dart' as auth_states;
 import 'config/supabase_config.dart';
+import 'database/database.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +25,10 @@ void main() async {
   // Initialize AuthRepository
   await AuthRepository.instance.initialize();
 
+  // Initialize database and InventoryRepository
+  final database = AppDatabase();
+  await InventoryRepository.instance.initialize(database);
+
   runApp(const MainApp());
 }
 
@@ -29,10 +37,22 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-          AuthBloc(authRepository: AuthRepository.instance)
-            ..add(const AuthCheckRequested()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) =>
+              AuthBloc(authRepository: AuthRepository.instance)
+                ..add(const AuthCheckRequested()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              WarehouseBloc(repository: InventoryRepository.instance),
+        ),
+        BlocProvider(
+          create: (context) =>
+              ProductBloc(repository: InventoryRepository.instance),
+        ),
+      ],
       child: MaterialApp(
         title: 'Sistema de Almacenes',
         theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),

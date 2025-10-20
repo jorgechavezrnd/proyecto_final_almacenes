@@ -23,8 +23,70 @@ class UserSessions extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// Warehouses table for storing warehouse information
+class Warehouses extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get description => text().nullable()();
+  TextColumn get address => text().nullable()();
+  TextColumn get city => text().nullable()();
+  TextColumn get phone => text().nullable()();
+  TextColumn get email => text().nullable()();
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get lastSyncAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Products table for storing product information
+class Products extends Table {
+  TextColumn get id => text()();
+  TextColumn get warehouseId => text()();
+  TextColumn get name => text()();
+  TextColumn get description => text().nullable()();
+  TextColumn get sku => text()();
+  TextColumn get barcode => text().nullable()();
+  TextColumn get category => text().nullable()();
+  RealColumn get price => real().withDefault(const Constant(0.0))();
+  RealColumn get cost => real().withDefault(const Constant(0.0))();
+  IntColumn get quantity => integer().withDefault(const Constant(0))();
+  IntColumn get minStock => integer().withDefault(const Constant(0))();
+  IntColumn get maxStock => integer().nullable()();
+  TextColumn get unit =>
+      text().withDefault(const Constant('unit'))(); // unit, kg, lbs, etc
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get lastSyncAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Inventory movements table for tracking stock changes
+class InventoryMovements extends Table {
+  TextColumn get id => text()();
+  TextColumn get productId => text()();
+  TextColumn get warehouseId => text()();
+  TextColumn get userId => text()();
+  TextColumn get type => text()(); // 'in', 'out', 'adjustment', 'transfer'
+  IntColumn get quantity => integer()();
+  IntColumn get previousStock => integer()();
+  IntColumn get newStock => integer()();
+  TextColumn get reason => text().nullable()();
+  TextColumn get notes => text().nullable()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get lastSyncAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Main database class for the application
-@DriftDatabase(tables: [UserSessions])
+@DriftDatabase(tables: [UserSessions, Warehouses, Products, InventoryMovements])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -35,10 +97,18 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
+        print('Creating database tables...');
         await m.createAll();
+        print('Database tables created successfully.');
       },
       onUpgrade: (Migrator m, int from, int to) async {
         // Handle database migrations here
+        print('Upgrading database from version $from to $to');
+      },
+      beforeOpen: (details) async {
+        // Enable foreign keys
+        await customStatement('PRAGMA foreign_keys = ON');
+        print('Database opened with foreign keys enabled');
       },
     );
   }
@@ -52,6 +122,19 @@ LazyDatabase _openConnection() {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'app_database.sqlite'));
 
-    return NativeDatabase.createInBackground(file);
+    // For development: uncomment the next line to reset the database
+    // if (await file.exists()) await file.delete();
+
+    return NativeDatabase.createInBackground(file, logStatements: true);
   });
+}
+
+/// Helper function to reset database (for development only)
+Future<void> resetDatabase() async {
+  final dbFolder = await getApplicationDocumentsDirectory();
+  final file = File(p.join(dbFolder.path, 'app_database.sqlite'));
+  if (await file.exists()) {
+    await file.delete();
+    print('Database file deleted for reset');
+  }
 }

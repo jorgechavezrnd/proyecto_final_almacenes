@@ -5,6 +5,7 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart' as auth_states;
 import 'login_screen.dart';
+import 'warehouse_list_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -202,19 +203,23 @@ class DashboardScreen extends StatelessWidget {
     // Acciones básicas para todos los usuarios
     List<Widget> actions = [
       _buildActionCard(
-        title: 'Inventario',
-        icon: Icons.inventory,
+        title: 'Almacenes',
+        icon: Icons.warehouse,
         color: Colors.blue,
         onTap: () {
-          _showComingSoon(context, 'Inventario');
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => WarehouseListScreen(userRole: role),
+            ),
+          );
         },
       ),
       _buildActionCard(
         title: 'Productos',
-        icon: Icons.shopping_bag,
+        icon: Icons.inventory_2,
         color: Colors.green,
         onTap: () {
-          _showComingSoon(context, 'Productos');
+          _showComingSoon(context, 'Vista General de Productos');
         },
       ),
     ];
