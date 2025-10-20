@@ -52,15 +52,24 @@ dart run build_runner build
 1. Ve a **Project Settings** → **API**
 2. Copia el **Project URL** y la **anon/public key**
 
-#### Paso 3: Configurar Credenciales en la App
-Edita el archivo `lib/config/supabase_config.dart`:
+#### Paso 3: Configurar Variables de Entorno
+1. **Copia el archivo de ejemplo**:
+   ```bash
+   # En la raíz del proyecto
+   copy .env.example .env
+   ```
 
-```dart
-class SupabaseConfig {
-  static const String supabaseUrl = 'TU_URL_DE_SUPABASE_AQUI';
-  static const String supabaseAnonKey = 'TU_CLAVE_ANON_DE_SUPABASE_AQUI';
-}
-```
+2. **Edita el archivo `.env`** con tus credenciales reales:
+   ```bash
+   # .env - Reemplaza con tus credenciales de Supabase
+   SUPABASE_URL=https://tu-proyecto-id.supabase.co
+   SUPABASE_ANON_KEY=tu-clave-anon-real-aqui
+   REDIRECT_URL=https://tu-app.com/auth/callback
+   ```
+
+3. **Verifica que `.env` esté en `.gitignore`** (ya incluido en el proyecto)
+
+> ⚠️ **Importante**: Nunca subas el archivo `.env` con credenciales reales al repositorio. El archivo `.env.example` sirve como plantilla sin credenciales sensibles.
 
 ### 3. 🗄️ Configurar Base de Datos
 
@@ -264,6 +273,13 @@ Supabase/Drift Operation → Data Response → BLoC State → UI Update
 ### **Comandos Útiles de Desarrollo**
 
 ```bash
+# Configurar variables de entorno (primera vez)
+copy .env.example .env
+# Luego edita .env con tus credenciales reales
+
+# Instalar dependencias
+flutter pub get
+
 # Generar código de Drift cuando cambies esquemas
 dart run build_runner build
 
@@ -320,7 +336,32 @@ Este proyecto está desarrollado para fines educativos como parte de la Maestrí
 
 ## 📞 Soporte
 
-Para dudas o problemas:
+### **Problemas Comunes y Soluciones**
+
+#### **🔧 Error: "Environment variable not set"**
+```bash
+# Solución: Crear y configurar archivo .env
+copy .env.example .env
+# Editar .env con credenciales reales de Supabase
+```
+
+#### **🔧 Error: "Error loading .env file"**
+```bash
+# Verificar que .env existe en la raíz del proyecto
+ls -la .env      # Linux/Mac
+dir .env         # Windows
+
+# Si no existe, copiar desde ejemplo
+cp .env.example .env    # Linux/Mac
+copy .env.example .env  # Windows
+```
+
+#### **🔧 Error de conexión a Supabase**
+1. **Verificar credenciales** en archivo `.env`
+2. **Confirmar URL del proyecto** en Supabase Dashboard
+3. **Validar clave anon/public** en Project Settings → API
+
+### **Para dudas adicionales:**
 1. **Revisa** la documentación de configuración
 2. **Verifica** que Supabase esté configurado correctamente
 3. **Ejecuta** `flutter doctor` para verificar el entorno
