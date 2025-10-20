@@ -254,14 +254,6 @@ class DashboardScreen extends StatelessWidget {
           },
         ),
         _buildActionCard(
-          title: 'Movimientos',
-          icon: Icons.swap_horiz,
-          color: Colors.orange,
-          onTap: () {
-            _showComingSoon(context, 'Movimientos');
-          },
-        ),
-        _buildActionCard(
           title: 'Reportes',
           icon: Icons.bar_chart,
           color: Colors.purple,
@@ -413,31 +405,6 @@ class DashboardScreen extends StatelessWidget {
             ),
           ),
           Expanded(child: Text(value)),
-        ],
-      ),
-    );
-  }
-
-  void _showComingSoon(BuildContext context, String feature) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.construction, color: Colors.orange),
-            SizedBox(width: 8),
-            Text('Próximamente'),
-          ],
-        ),
-        content: Text(
-          'La funcionalidad "$feature" estará disponible próximamente.\n\n'
-          'Esta es una versión demo del sistema de autenticación.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Entendido'),
-          ),
         ],
       ),
     );
