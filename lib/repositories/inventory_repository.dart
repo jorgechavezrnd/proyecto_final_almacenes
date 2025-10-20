@@ -851,12 +851,16 @@ class InventoryRepository {
   Future<Map<String, List<Sale>>> getAllSalesByUser() async {
     // Get all sales
     final allSales = await _salesDao.getAllSales();
-    
-    print('🔍 ADMIN REPORTS: Found ${allSales.length} total sales (no date filter)');
+
+    print(
+      '🔍 ADMIN REPORTS: Found ${allSales.length} total sales (no date filter)',
+    );
     for (final sale in allSales) {
-      print('🔍 ADMIN REPORTS: Sale ID ${sale.id}, Date: ${sale.saleDate}, User: ${sale.userId}');
+      print(
+        '🔍 ADMIN REPORTS: Sale ID ${sale.id}, Date: ${sale.saleDate}, User: ${sale.userId}',
+      );
     }
-    
+
     // Group sales by user ID first
     final Map<String, List<Sale>> salesByUserId = {};
     for (final sale in allSales) {
@@ -864,15 +868,15 @@ class InventoryRepository {
         salesByUserId.putIfAbsent(sale.userId, () => []).add(sale);
       }
     }
-    
+
     // Convert user IDs to user names using AuthRepository
     final Map<String, List<Sale>> salesByUserName = {};
     final authRepo = AuthRepository.instance;
-    
+
     for (final entry in salesByUserId.entries) {
       final userId = entry.key;
       final sales = entry.value;
-      
+
       // Try to get user name from Supabase
       String userName = userId; // fallback to user ID
       try {
@@ -887,10 +891,10 @@ class InventoryRepository {
         print('Warning: Could not get user name for ID $userId: $e');
         // Keep userId as fallback
       }
-      
+
       salesByUserName[userName] = sales;
     }
-    
+
     return salesByUserName;
   }
 
@@ -900,21 +904,43 @@ class InventoryRepository {
     DateTime endDate,
   ) async {
     print('🔍 ADMIN REPORTS: Filtering sales from $startDate to $endDate');
-    
+
     // Adjust dates to cover the entire day
-    final adjustedStartDate = DateTime(startDate.year, startDate.month, startDate.day, 0, 0, 0);
-    final adjustedEndDate = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59, 999);
-    
-    print('🔍 ADMIN REPORTS: Adjusted range from $adjustedStartDate to $adjustedEndDate');
-    
+    final adjustedStartDate = DateTime(
+      startDate.year,
+      startDate.month,
+      startDate.day,
+      0,
+      0,
+      0,
+    );
+    final adjustedEndDate = DateTime(
+      endDate.year,
+      endDate.month,
+      endDate.day,
+      23,
+      59,
+      59,
+      999,
+    );
+
+    print(
+      '🔍 ADMIN REPORTS: Adjusted range from $adjustedStartDate to $adjustedEndDate',
+    );
+
     // Get all sales in date range
-    final allSales = await _salesDao.getSalesByDateRange(adjustedStartDate, adjustedEndDate);
-    
+    final allSales = await _salesDao.getSalesByDateRange(
+      adjustedStartDate,
+      adjustedEndDate,
+    );
+
     print('🔍 ADMIN REPORTS: Found ${allSales.length} sales in date range');
     for (final sale in allSales) {
-      print('🔍 ADMIN REPORTS: Sale ID ${sale.id}, Date: ${sale.saleDate}, User: ${sale.userId}');
+      print(
+        '🔍 ADMIN REPORTS: Sale ID ${sale.id}, Date: ${sale.saleDate}, User: ${sale.userId}',
+      );
     }
-    
+
     // Group sales by user ID first
     final Map<String, List<Sale>> salesByUserId = {};
     for (final sale in allSales) {
@@ -922,15 +948,15 @@ class InventoryRepository {
         salesByUserId.putIfAbsent(sale.userId, () => []).add(sale);
       }
     }
-    
+
     // Convert user IDs to user names using AuthRepository
     final Map<String, List<Sale>> salesByUserName = {};
     final authRepo = AuthRepository.instance;
-    
+
     for (final entry in salesByUserId.entries) {
       final userId = entry.key;
       final sales = entry.value;
-      
+
       // Try to get user name from Supabase
       String userName = userId; // fallback to user ID
       try {
@@ -945,10 +971,10 @@ class InventoryRepository {
         print('Warning: Could not get user name for ID $userId: $e');
         // Keep userId as fallback
       }
-      
+
       salesByUserName[userName] = sales;
     }
-    
+
     return salesByUserName;
   }
 }

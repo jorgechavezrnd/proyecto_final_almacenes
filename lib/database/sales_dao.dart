@@ -21,21 +21,24 @@ class SalesDao {
     print('🔍 DAO: Filtering sales from $startDate to $endDate');
     print('🔍 DAO: Start timestamp: ${startDate.millisecondsSinceEpoch}');
     print('🔍 DAO: End timestamp: ${endDate.millisecondsSinceEpoch}');
-    
-    final result = await (_database.select(_database.sales)
-          ..where(
-            (s) =>
-                s.saleDate.isBiggerOrEqualValue(startDate) &
-                s.saleDate.isSmallerOrEqualValue(endDate),
-          )
-          ..orderBy([(s) => OrderingTerm.desc(s.saleDate)]))
-        .get();
-        
+
+    final result =
+        await (_database.select(_database.sales)
+              ..where(
+                (s) =>
+                    s.saleDate.isBiggerOrEqualValue(startDate) &
+                    s.saleDate.isSmallerOrEqualValue(endDate),
+              )
+              ..orderBy([(s) => OrderingTerm.desc(s.saleDate)]))
+            .get();
+
     print('🔍 DAO: Found ${result.length} sales in date range');
     for (final sale in result) {
-      print('🔍 DAO: Sale ID ${sale.id}, Date: ${sale.saleDate}, Timestamp: ${sale.saleDate.millisecondsSinceEpoch}');
+      print(
+        '🔍 DAO: Sale ID ${sale.id}, Date: ${sale.saleDate}, Timestamp: ${sale.saleDate.millisecondsSinceEpoch}',
+      );
     }
-    
+
     return result;
   }
 

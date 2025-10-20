@@ -83,7 +83,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
   Future<void> _generatePdf(AdminSalesReportLoaded state) async {
     // Guardar el estado antes de generar PDF
     _lastReportState = state;
-    
+
     context.read<ReportsBloc>().add(
       GenerateAdminSalesReportPdf(
         salesByUser: state.salesByUser,
@@ -165,9 +165,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
               children: [
                 _buildFilterSection(),
                 const SizedBox(height: 16),
-                Expanded(
-                  child: _buildContent(state),
-                ),
+                Expanded(child: _buildContent(state)),
               ],
             ),
           );
@@ -185,9 +183,9 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
           children: [
             Text(
               'Filtros',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Row(
@@ -270,11 +268,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red,
-            ),
+            Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
             Text(
               'Error al cargar reportes',
@@ -309,11 +303,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.assessment_outlined,
-            size: 64,
-            color: Colors.grey,
-          ),
+          Icon(Icons.assessment_outlined, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
           Text(
             'Reportes Administrativos',
@@ -333,9 +323,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
   }
 
   Widget _buildReportContent(AdminSalesReportLoaded state) {
-    final totalSales = state.salesByUser.values
-        .expand((sales) => sales)
-        .length;
+    final totalSales = state.salesByUser.values.expand((sales) => sales).length;
     final totalAmount = state.salesByUser.values
         .expand((sales) => sales)
         .fold<double>(0.0, (sum, sale) => sum + sale.totalAmount);
@@ -344,16 +332,18 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
       children: [
         _buildSummaryCards(totalSales, totalAmount, state.salesByUser.length),
         const SizedBox(height: 16),
-        Expanded(
-          child: _buildSalesByUserList(state.salesByUser),
-        ),
+        Expanded(child: _buildSalesByUserList(state.salesByUser)),
         const SizedBox(height: 16),
         _buildActionButtons(state),
       ],
     );
   }
 
-  Widget _buildSummaryCards(int totalSales, double totalAmount, int totalUsers) {
+  Widget _buildSummaryCards(
+    int totalSales,
+    double totalAmount,
+    int totalUsers,
+  ) {
     return Row(
       children: [
         Expanded(
@@ -433,11 +423,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.people,
-                    size: 32,
-                    color: Colors.purple.shade700,
-                  ),
+                  Icon(Icons.people, size: 32, color: Colors.purple.shade700),
                   const SizedBox(height: 8),
                   Text(
                     'Usuarios Activos',
@@ -470,17 +456,13 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.inventory_2_outlined,
-              size: 64,
-              color: Colors.grey,
-            ),
+            Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
               'No hay ventas en el período seleccionado',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.grey,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: Colors.grey),
             ),
           ],
         ),
@@ -520,17 +502,12 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
             children: sales.map<Widget>((sale) {
               return ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 32),
-                leading: Icon(
-                  Icons.receipt,
-                  color: Colors.grey.shade600,
-                ),
+                leading: Icon(Icons.receipt, color: Colors.grey.shade600),
                 title: Text(
                   'Venta #${sale.id}',
                   style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
-                subtitle: Text(
-                  _dateFormatter.format(sale.saleDate),
-                ),
+                subtitle: Text(_dateFormatter.format(sale.saleDate)),
                 trailing: Text(
                   _currencyFormatter.format(sale.totalAmount),
                   style: TextStyle(
