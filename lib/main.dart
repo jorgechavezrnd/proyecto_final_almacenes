@@ -7,6 +7,7 @@ import 'bloc/auth_bloc.dart';
 import 'bloc/auth_event.dart';
 import 'blocs/warehouse_bloc.dart';
 import 'blocs/product_bloc.dart';
+import 'blocs/sales_bloc.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'bloc/auth_state.dart' as auth_states;
@@ -51,6 +52,9 @@ class MainApp extends StatelessWidget {
         BlocProvider(
           create: (context) =>
               ProductBloc(repository: InventoryRepository.instance),
+        ),
+        BlocProvider(
+          create: (context) => SalesBloc(InventoryRepository.instance),
         ),
       ],
       child: MaterialApp(

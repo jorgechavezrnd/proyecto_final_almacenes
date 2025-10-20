@@ -85,8 +85,58 @@ class InventoryMovements extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// Sales table for storing sales transactions
+class Sales extends Table {
+  TextColumn get id => text()();
+  TextColumn get warehouseId => text()();
+  TextColumn get userId => text()();
+  TextColumn get customerName => text().nullable()();
+  TextColumn get customerEmail => text().nullable()();
+  TextColumn get customerPhone => text().nullable()();
+  RealColumn get subtotal => real()();
+  RealColumn get taxAmount => real().withDefault(const Constant(0.0))();
+  RealColumn get discountAmount => real().withDefault(const Constant(0.0))();
+  RealColumn get totalAmount => real()();
+  TextColumn get paymentMethod =>
+      text()(); // 'cash', 'card', 'transfer', 'other'
+  TextColumn get status => text().withDefault(
+    const Constant('completed'),
+  )(); // 'pending', 'completed', 'cancelled'
+  TextColumn get notes => text().nullable()();
+  DateTimeColumn get saleDate => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get lastSyncAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Sale items table for storing individual items in each sale
+class SaleItems extends Table {
+  TextColumn get id => text()();
+  TextColumn get saleId => text()();
+  TextColumn get productId => text()();
+  IntColumn get quantity => integer()();
+  RealColumn get unitPrice => real()();
+  RealColumn get totalPrice => real()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Main database class for the application
-@DriftDatabase(tables: [UserSessions, Warehouses, Products, InventoryMovements])
+@DriftDatabase(
+  tables: [
+    UserSessions,
+    Warehouses,
+    Products,
+    InventoryMovements,
+    Sales,
+    SaleItems,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 

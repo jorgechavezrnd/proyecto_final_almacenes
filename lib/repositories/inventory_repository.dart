@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import '../database/database.dart';
 import '../database/warehouse_dao.dart';
 import '../database/product_dao.dart';
+import '../database/sales_dao.dart';
 import '../services/supabase_service.dart';
 
 /// Repository for managing inventory operations with offline-first architecture
@@ -15,6 +16,7 @@ class InventoryRepository {
   late final AppDatabase _database;
   late final WarehouseDao _warehouseDao;
   late final ProductDao _productDao;
+  late final SalesDao _salesDao;
   final SupabaseService _supabaseService = SupabaseService.instance;
 
   /// Initialize the repository
@@ -26,6 +28,7 @@ class InventoryRepository {
 
     _warehouseDao = WarehouseDao(_database);
     _productDao = ProductDao(_database);
+    _salesDao = SalesDao(_database);
   }
 
   /// Ensure all required tables exist
@@ -36,6 +39,8 @@ class InventoryRepository {
       await (_database.select(_database.warehouses)..limit(1)).get();
       await (_database.select(_database.products)..limit(1)).get();
       await (_database.select(_database.inventoryMovements)..limit(1)).get();
+      await (_database.select(_database.sales)..limit(1)).get();
+      await (_database.select(_database.saleItems)..limit(1)).get();
 
       print('Database tables verified successfully');
     } catch (e) {
@@ -412,28 +417,52 @@ class InventoryRepository {
 
   /// Sync product to server
   Future<void> _syncProductToServer(Product product) async {
-    final data = {
-      'id': product.id,
-      'warehouse_id': product.warehouseId,
-      'name': product.name,
-      'description': product.description,
-      'sku': product.sku,
-      'barcode': product.barcode,
-      'category': product.category,
-      'price': product.price,
-      'cost': product.cost,
-      'quantity': product.quantity,
-      'min_stock': product.minStock,
-      'max_stock': product.maxStock,
-      'unit': product.unit,
-      'is_active': product.isActive,
-      'created_at': product.createdAt.toIso8601String(),
-      'updated_at': product.updatedAt.toIso8601String(),
-    };
+    try {
+      print('DEBUG: Preparing to sync product ${product.id} to Supabase');
+      final data = {
+        'id': product.id,
+        'warehouse_id': product.warehouseId,
+        'name': product.name,
+        'description': product.description,
+        'sku': product.sku,
+        'barcode': product.barcode,
+        'category': product.category,
+        'price': product.price,
+        'cost': product.cost,
+        'quantity': product.quantity,
+        'min_stock': product.minStock,
+        'max_stock': product.maxStock,
+        'unit': product.unit,
+        'is_active': product.isActive,
+        'created_at': product.createdAt.toIso8601String(),
+        'updated_at': product.updatedAt.toIso8601String(),
+      };
 
-    await _supabaseService.client.from('products').upsert(data);
+      print('DEBUG: Syncing product data: $data');
 
-    await _productDao.markAsSynced(product.id);
+      // Try to update first, if it fails, try to insert
+      try {
+        final updateResponse = await _supabaseService.client
+            .from('products')
+            .update(data)
+            .eq('id', product.id);
+        print('DEBUG: Update response: $updateResponse');
+      } catch (updateError) {
+        print('DEBUG: Update failed, trying insert: $updateError');
+        final insertResponse = await _supabaseService.client
+            .from('products')
+            .insert(data);
+        print('DEBUG: Insert response: $insertResponse');
+      }
+
+      print('DEBUG: Product ${product.id} successfully synced to Supabase');
+
+      await _productDao.markAsSynced(product.id);
+      print('DEBUG: Product ${product.id} marked as synced locally');
+    } catch (e) {
+      print('ERROR: Failed to sync product ${product.id}: $e');
+      rethrow;
+    }
   }
 
   /// Sync all products to server
@@ -545,9 +574,250 @@ class InventoryRepository {
     final products = await _productDao.getProductsNeedingSync();
     return warehouses.isNotEmpty || products.isNotEmpty;
   }
+
+  // ============================================================================
+  // SALES METHODS
+  // ============================================================================
+
+  /// Get all sales
+  Future<List<Sale>> getAllSales() async {
+    return await _salesDao.getAllSales();
+  }
+
+  /// Get sales by date range
+  Future<List<Sale>> getSalesByDateRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    return await _salesDao.getSalesByDateRange(startDate, endDate);
+  }
+
+  /// Get sales by warehouse
+  Future<List<Sale>> getSalesByWarehouse(String warehouseId) async {
+    return await _salesDao.getSalesByWarehouse(warehouseId);
+  }
+
+  /// Get sales by user
+  Future<List<Sale>> getSalesByUser(String userId) async {
+    return await _salesDao.getSalesByUser(userId);
+  }
+
+  /// Get sale with items
+  Future<Map<String, dynamic>> getSaleWithItems(String saleId) async {
+    return await _salesDao.getSaleWithItems(saleId);
+  }
+
+  /// Get sales summary
+  Future<Map<String, dynamic>> getSalesSummary({
+    String? warehouseId,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    return await _salesDao.getSalesSummary(
+      warehouseId: warehouseId,
+      startDate: startDate,
+      endDate: endDate,
+    );
+  }
+
+  /// Create new sale
+  Future<InventoryResult<String>> createSale({
+    required String warehouseId,
+    required String userId,
+    String? customerName,
+    String? customerEmail,
+    String? customerPhone,
+    required double subtotal,
+    double taxAmount = 0.0,
+    double discountAmount = 0.0,
+    required double totalAmount,
+    required String paymentMethod,
+    String? notes,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    try {
+      // Create locally first (offline-first)
+      final saleId = await _salesDao.createSale(
+        warehouseId: warehouseId,
+        userId: userId,
+        customerName: customerName,
+        customerEmail: customerEmail,
+        customerPhone: customerPhone,
+        subtotal: subtotal,
+        taxAmount: taxAmount,
+        discountAmount: discountAmount,
+        totalAmount: totalAmount,
+        paymentMethod: paymentMethod,
+        notes: notes,
+        items: items,
+      );
+
+      // Try to sync to Supabase
+      try {
+        final sale = await _salesDao.getSaleById(saleId);
+        if (sale != null) {
+          await _syncSaleToSupabase(sale);
+
+          // Sync sale items
+          final saleItems = await _salesDao.getSaleItems(saleId);
+          for (final item in saleItems) {
+            await _syncSaleItemToSupabase(item);
+          }
+
+          // Sync affected products with updated quantities
+          final affectedProductIds = items
+              .map((item) => item['productId'] as String)
+              .toSet();
+          print(
+            'DEBUG: Syncing ${affectedProductIds.length} affected products: $affectedProductIds',
+          );
+          for (final productId in affectedProductIds) {
+            final product = await _productDao.getProductById(productId);
+            if (product != null) {
+              print(
+                'DEBUG: Syncing product ${product.name} (ID: ${product.id}) with quantity: ${product.quantity}',
+              );
+              await _syncProductToServer(product);
+              print('DEBUG: Successfully synced product ${product.id}');
+            } else {
+              print('ERROR: Product not found: $productId');
+            }
+          }
+        }
+      } catch (syncError) {
+        // Continue even if sync fails (offline-first)
+        print('Sync failed: $syncError');
+        print('Stack trace: ${StackTrace.current}');
+      }
+
+      return InventoryResult.success(saleId);
+    } catch (e) {
+      return InventoryResult.error('Failed to create sale: $e');
+    }
+  }
+
+  /// Delete sale
+  Future<InventoryResult<bool>> deleteSale(String saleId) async {
+    try {
+      final success = await _salesDao.deleteSale(saleId);
+
+      if (success) {
+        // Try to sync deletion to Supabase
+        try {
+          await _supabaseService.client.from('sales').delete().eq('id', saleId);
+        } catch (syncError) {
+          // Continue even if sync fails
+          print('Delete sync failed: $syncError');
+        }
+
+        return InventoryResult.success(true);
+      } else {
+        return InventoryResult.error('Failed to delete sale');
+      }
+    } catch (e) {
+      return InventoryResult.error('Failed to delete sale: $e');
+    }
+  }
+
+  /// Sync sales to/from Supabase
+  Future<void> syncSales() async {
+    try {
+      // Sync local sales to server
+      final unsyncedSales = await _salesDao.getUnsyncedSales();
+      for (final sale in unsyncedSales) {
+        await _syncSaleToSupabase(sale);
+
+        // Sync sale items
+        final saleItems = await _salesDao.getSaleItems(sale.id);
+        for (final item in saleItems) {
+          await _syncSaleItemToSupabase(item);
+        }
+
+        await _salesDao.markAsSynced(sale.id);
+      }
+
+      // Sync server sales to local
+      await _syncSalesFromSupabase();
+    } catch (e) {
+      throw Exception('Sync failed: $e');
+    }
+  }
+
+  /// Sync sale to Supabase
+  Future<void> _syncSaleToSupabase(Sale sale) async {
+    final data = {
+      'id': sale.id,
+      'warehouse_id': sale.warehouseId,
+      'user_id': sale.userId,
+      'customer_name': sale.customerName,
+      'customer_email': sale.customerEmail,
+      'customer_phone': sale.customerPhone,
+      'subtotal': sale.subtotal,
+      'tax_amount': sale.taxAmount,
+      'discount_amount': sale.discountAmount,
+      'total_amount': sale.totalAmount,
+      'payment_method': sale.paymentMethod,
+      'status': sale.status,
+      'notes': sale.notes,
+      'sale_date': sale.saleDate.toIso8601String(),
+      'created_at': sale.createdAt.toIso8601String(),
+      'updated_at': sale.updatedAt.toIso8601String(),
+    };
+
+    await _supabaseService.client.from('sales').upsert(data);
+  }
+
+  /// Sync sale item to Supabase
+  Future<void> _syncSaleItemToSupabase(SaleItem item) async {
+    final data = {
+      'id': item.id,
+      'sale_id': item.saleId,
+      'product_id': item.productId,
+      'quantity': item.quantity,
+      'unit_price': item.unitPrice,
+      'total_price': item.totalPrice,
+      'created_at': item.createdAt.toIso8601String(),
+    };
+
+    await _supabaseService.client.from('sale_items').upsert(data);
+  }
+
+  /// Sync sales from Supabase to local
+  Future<void> _syncSalesFromSupabase() async {
+    final response = await _supabaseService.client
+        .from('sales')
+        .select('*')
+        .order('updated_at');
+
+    for (final data in response) {
+      await _upsertSaleFromServer(data);
+    }
+
+    // Sync sale items
+    final itemsResponse = await _supabaseService.client
+        .from('sale_items')
+        .select('*')
+        .order('created_at');
+
+    for (final data in itemsResponse) {
+      await _upsertSaleItemFromServer(data);
+    }
+  }
+
+  /// Upsert sale from server data
+  Future<void> _upsertSaleFromServer(Map<String, dynamic> data) async {
+    // Use SalesDao method instead of direct database access
+    await _salesDao.upsertSaleFromServer(data);
+  }
+
+  /// Upsert sale item from server data
+  Future<void> _upsertSaleItemFromServer(Map<String, dynamic> data) async {
+    // Use SalesDao method instead of direct database access
+    await _salesDao.upsertSaleItemFromServer(data);
+  }
 }
 
-/// Result class for inventory operations
+/// Result wrapper for inventory operations
 class InventoryResult<T> {
   final bool isSuccess;
   final String? error;

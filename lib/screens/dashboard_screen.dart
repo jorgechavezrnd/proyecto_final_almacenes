@@ -6,6 +6,7 @@ import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart' as auth_states;
 import 'login_screen.dart';
 import 'warehouse_list_screen.dart';
+import 'sales/sales_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -263,6 +264,18 @@ class DashboardScreen extends StatelessWidget {
     } else {
       // Acciones para usuarios regulares
       actions.addAll([
+        _buildActionCard(
+          title: 'Ventas',
+          icon: Icons.point_of_sale,
+          color: Colors.indigo,
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const SalesScreen(),
+              ),
+            );
+          },
+        ),
         _buildActionCard(
           title: 'Movimientos',
           icon: Icons.swap_horiz,
