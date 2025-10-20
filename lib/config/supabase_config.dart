@@ -1,15 +1,26 @@
-// Supabase configuration
-// IMPORTANT: Replace these with your actual Supabase project credentials
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+// Supabase configuration loaded from environment variables
+// Make sure to load dotenv before using these values
 class SupabaseConfig {
-  // Your Supabase project URL
-  static const String supabaseUrl = 'https://hdjsoucuqegosvasovla.supabase.co';
+  // Your Supabase project URL from .env file
+  static String get supabaseUrl =>
+      dotenv.env['SUPABASE_URL'] ?? _throwError('SUPABASE_URL');
 
-  // Your Supabase anon/public key
-  static const String supabaseAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkanNvdWN1cWVnb3N2YXNvdmxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA4ODc5NjAsImV4cCI6MjA3NjQ2Mzk2MH0.yKSiX5jD5oumdhzmnplkNS3ghzj_4Ed_Pt9DbCMR3p8';
+  // Your Supabase anon/public key from .env file
+  static String get supabaseAnonKey =>
+      dotenv.env['SUPABASE_ANON_KEY'] ?? _throwError('SUPABASE_ANON_KEY');
 
-  // Optional: Redirect URL for password reset
-  static const String redirectUrl = 'YOUR_REDIRECT_URL_HERE';
+  // Optional: Redirect URL for password reset from .env file
+  static String get redirectUrl =>
+      dotenv.env['REDIRECT_URL'] ?? 'https://your-app.com/auth/callback';
+
+  // Helper method to throw error if environment variable is missing
+  static String _throwError(String key) {
+    throw Exception(
+      'Environment variable $key is not set. Make sure to load .env file.',
+    );
+  }
 }
 
 // TODO: 

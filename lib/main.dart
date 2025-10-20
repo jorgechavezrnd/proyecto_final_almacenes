@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'services/supabase_service.dart';
 import 'repositories/auth_repository.dart';
 import 'repositories/inventory_repository.dart';
@@ -18,7 +19,18 @@ import 'database/database.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Supabase
+  // Load environment variables from .env file
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    // If .env file doesn't exist, show error
+    print('Error loading .env file: $e');
+    print(
+      'Make sure to create a .env file in the project root with your Supabase credentials',
+    );
+  }
+
+  // Initialize Supabase with environment variables
   await SupabaseService.initialize(
     url: SupabaseConfig.supabaseUrl,
     anonKey: SupabaseConfig.supabaseAnonKey,
