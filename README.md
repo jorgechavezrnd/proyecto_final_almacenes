@@ -189,7 +189,7 @@ lib/
 - **Aislamiento de datos**: Los usuarios solo ven sus propios datos
 - **Administradores**: Acceso completo con verificación de rol
 
-### 📊 Funcionalidades por Módulo
+##  Funcionalidades por Módulo
 
 #### **👤 Módulo de Autenticación**
 - Login/Registro con email y contraseña
@@ -292,5 +292,35 @@ El archivo `supabase_configuration.sql` incluye:
 - **Políticas RLS** para seguridad granular
 - **4 funciones RPC** para operaciones avanzadas
 - **Triggers de auditoría** automáticos
+
+---
+
+## 🗄️ Diagramas de Base de Datos
+
+### 📊 Base de Datos Supabase (PostgreSQL)
+
+El siguiente diagrama muestra la estructura completa de la base de datos principal en Supabase:
+
+<img src="images/supabaseDatabase.png" alt="Diagrama Base de Datos Supabase" width="100%">
+
+**Características principales:**
+- **7 tablas principales**: warehouses, products, inventory_movements, sales, sale_items, suppliers, auth.users
+- **Row Level Security (RLS)**: Políticas de seguridad implementadas en todas las tablas  
+- **Índices optimizados**: Para consultas rápidas y eficientes
+- **Funciones RPC**: Para operaciones complejas y reportes
+- **Triggers**: Para auditoría y sincronización automática
+
+### 📱 Base de Datos Local Drift (SQLite)
+
+Este diagrama representa la estructura de la base de datos local que permite el funcionamiento offline-first:
+
+<img src="images/driftDatabase.png" alt="Diagrama Base de Datos Drift" width="100%">
+
+**Características principales:**
+- **6 tablas locales**: Réplica sincronizada de los datos principales
+- **user_sessions**: Tabla específica para manejo de sesiones offline
+- **Campos last_sync_at**: Control de sincronización entre local y remoto
+- **Tipos optimizados**: Adaptados para SQLite (TEXT, INTEGER, REAL)
+- **Persistencia offline**: Funcionalidad completa sin conexión a internet
 
 
