@@ -487,23 +487,6 @@ COMMENT ON FUNCTION public.get_sales_stats(TIMESTAMPTZ, TIMESTAMPTZ) IS 'Obtiene
 COMMENT ON FUNCTION public.get_low_stock_products() IS 'Obtiene productos con stock bajo o crítico';
 
 -- ============================================================================
--- 9. DATOS DE EJEMPLO (OPCIONAL)
--- ============================================================================
-
--- Insertar un almacén de ejemplo
-INSERT INTO warehouses (id, name, description, address, city) 
-VALUES ('warehouse-001', 'Almacén Central', 'Almacén principal de la empresa', 'Av. Principal 123', 'Ciudad Principal')
-ON CONFLICT (id) DO NOTHING;
-
--- Insertar categorías de productos de ejemplo
-INSERT INTO products (id, warehouse_id, name, description, sku, price, cost, quantity, min_stock, category) 
-VALUES 
-    ('prod-001', 'warehouse-001', 'Producto Ejemplo 1', 'Descripción del producto 1', 'SKU-001', 25.99, 15.00, 100, 10, 'Electrónicos'),
-    ('prod-002', 'warehouse-001', 'Producto Ejemplo 2', 'Descripción del producto 2', 'SKU-002', 45.50, 30.00, 50, 5, 'Hogar'),
-    ('prod-003', 'warehouse-001', 'Producto Ejemplo 3', 'Descripción del producto 3', 'SKU-003', 12.75, 8.00, 200, 20, 'Oficina')
-ON CONFLICT (sku) DO NOTHING;
-
--- ============================================================================
 -- CONFIGURACIÓN COMPLETADA
 -- ============================================================================
 
@@ -517,7 +500,6 @@ BEGIN
     RAISE NOTICE '- Funciones RPC para usuarios creadas';
     RAISE NOTICE '- Funciones de reportes disponibles';
     RAISE NOTICE '- Triggers de auditoría activados';
-    RAISE NOTICE '- Datos de ejemplo insertados';
     RAISE NOTICE '';
     RAISE NOTICE 'La aplicación Flutter ya puede conectarse a esta base de datos.';
 END $$;

@@ -67,10 +67,6 @@ dart run build_runner build
    REDIRECT_URL=https://tu-app.com/auth/callback
    ```
 
-3. **Verifica que `.env` esté en `.gitignore`** (ya incluido en el proyecto)
-
-> ⚠️ **Importante**: Nunca subas el archivo `.env` con credenciales reales al repositorio. El archivo `.env.example` sirve como plantilla sin credenciales sensibles.
-
 ### 3. 🗄️ Configurar Base de Datos
 
 #### Ejecutar Script de Configuración
@@ -79,21 +75,9 @@ dart run build_runner build
 3. Pégalo en el editor SQL y ejecuta el script completo
 4. Verifica que aparezcan mensajes de confirmación
 
-> ⚠️ **Importante**: El archivo `supabase_configuration.sql` contiene toda la configuración necesaria: tablas, índices, políticas RLS, funciones y datos de ejemplo.
+> ⚠️ **Importante**: El archivo `supabase_configuration.sql` contiene toda la configuración necesaria: tablas, índices, políticas RLS y funciones.
 
-### 4. 👤 Crear Usuario Administrador
-
-#### Opción A: Desde la Aplicación
-1. Ejecuta la aplicación
-2. Ve a **Registrarse**
-3. Crea una cuenta con email y contraseña
-
-#### Opción B: Directamente en Supabase
-1. Ve a **Authentication** → **Users** en Supabase
-2. Crea un nuevo usuario
-3. En **User Metadata**, agrega: `{"role": "admin"}`
-
-### 5. ▶️ Ejecutar la Aplicación
+### 4. ▶️ Ejecutar la Aplicación
 
 ```bash
 # Para desarrollo
@@ -208,7 +192,6 @@ lib/
 
 #### **👤 Módulo de Autenticación**
 - Login/Registro con email y contraseña
-- Recuperación de contraseña
 - Gestión de sesiones persistentes
 - Control de roles (usuario/administrador)
 
@@ -308,65 +291,5 @@ El archivo `supabase_configuration.sql` incluye:
 - **Políticas RLS** para seguridad granular
 - **4 funciones RPC** para operaciones avanzadas
 - **Triggers de auditoría** automáticos
-- **Datos de ejemplo** para testing
 
-## � Contribución y Desarrollo
 
-### **Para Desarrolladores**
-
-1. **Fork** el repositorio
-2. **Crea una rama** para tu feature: `git checkout -b feature/nueva-funcionalidad`
-3. **Realiza tus cambios** siguiendo las convenciones del proyecto
-4. **Ejecuta las pruebas** y análisis de código
-5. **Commit** con mensajes descriptivos
-6. **Push** a tu rama: `git push origin feature/nueva-funcionalidad`
-7. **Crea un Pull Request** detallado
-
-### **Convenciones de Código**
-
-- **Dart/Flutter style guide**: Seguir las convenciones oficiales
-- **Nombres descriptivos**: Variables y funciones con nombres claros
-- **Comentarios**: Documentar funciones complejas
-- **BLoC pattern**: Mantener separación clara de responsabilidades
-- **Error handling**: Manejo graceful de todos los errores
-
-## 📝 Licencia
-
-Este proyecto está desarrollado para fines educativos como parte de la Maestría en Desarrollo Full Stack.
-
-## 📞 Soporte
-
-### **Problemas Comunes y Soluciones**
-
-#### **🔧 Error: "Environment variable not set"**
-```bash
-# Solución: Crear y configurar archivo .env
-copy .env.example .env
-# Editar .env con credenciales reales de Supabase
-```
-
-#### **🔧 Error: "Error loading .env file"**
-```bash
-# Verificar que .env existe en la raíz del proyecto
-ls -la .env      # Linux/Mac
-dir .env         # Windows
-
-# Si no existe, copiar desde ejemplo
-cp .env.example .env    # Linux/Mac
-copy .env.example .env  # Windows
-```
-
-#### **🔧 Error de conexión a Supabase**
-1. **Verificar credenciales** en archivo `.env`
-2. **Confirmar URL del proyecto** en Supabase Dashboard
-3. **Validar clave anon/public** en Project Settings → API
-
-### **Para dudas adicionales:**
-1. **Revisa** la documentación de configuración
-2. **Verifica** que Supabase esté configurado correctamente
-3. **Ejecuta** `flutter doctor` para verificar el entorno
-4. **Consulta** los logs de error en la consola
-
----
-
-**Desarrollado con ❤️ usando Flutter y Supabase**
