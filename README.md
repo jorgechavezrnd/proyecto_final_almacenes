@@ -16,6 +16,7 @@ Este sistema permite a las empresas gestionar múltiples almacenes, controlar in
 - **🔒 Seguridad**: Row Level Security (RLS) en base de datos
 - **📱 Experiencia Móvil**: Diseño responsivo optimizado para dispositivos móviles
 - **🌐 Sincronización**: Datos sincronizados en tiempo real con Supabase
+- **📴 Offline-First**: Funcionalidad completa sin conexión a internet
 
 ## 🚀 Setup desde Cero
 
