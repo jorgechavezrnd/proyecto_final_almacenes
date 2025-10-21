@@ -301,7 +301,10 @@ El archivo `supabase_configuration.sql` incluye:
 
 El siguiente diagrama muestra la estructura completa de la base de datos principal en Supabase:
 
-<img src="images/supabaseDatabase.png" alt="Diagrama Base de Datos Supabase" width="100%">
+<div align="center">
+  <img src="images/supabaseDatabase.png" alt="Diagrama Base de Datos Supabase" style="width: 150%; max-width: 1600px; height: auto; cursor: zoom-in;" onclick="window.open(this.src, '_blank')">
+</div>
+<p align="center"><small>💡 <em>Haz clic en la imagen para verla en tamaño completo</em></small></p>
 
 **Características principales:**
 - **7 tablas principales**: warehouses, products, inventory_movements, sales, sale_items, suppliers, auth.users
@@ -314,7 +317,10 @@ El siguiente diagrama muestra la estructura completa de la base de datos princip
 
 Este diagrama representa la estructura de la base de datos local que permite el funcionamiento offline-first:
 
-<img src="images/driftDatabase.png" alt="Diagrama Base de Datos Drift" width="100%">
+<div align="center">
+  <img src="images/driftDatabase.png" alt="Diagrama Base de Datos Drift" style="width: 150%; max-width: 1600px; height: auto; cursor: zoom-in;" onclick="window.open(this.src, '_blank')">
+</div>
+<p align="center"><small>💡 <em>Haz clic en la imagen para verla en tamaño completo</em></small></p>
 
 **Características principales:**
 - **6 tablas locales**: Réplica sincronizada de los datos principales
