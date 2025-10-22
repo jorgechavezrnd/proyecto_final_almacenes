@@ -224,14 +224,15 @@ class InventoryRepository {
         unit: unit,
       );
 
-      // Try to sync to server
+      // Try to sync to server immediately
       try {
         final product = await _productDao.getProductById(localId);
         if (product != null) {
           await _syncProductToServer(product);
         }
-      } catch (e) {
-        // Will sync later
+      } catch (syncError) {
+        // Log sync error but don't fail the operation (offline-first)
+        // Product will be synced later during next sync operation
       }
 
       return InventoryResult.success(localId);
@@ -432,15 +433,8 @@ class InventoryRepository {
         'updated_at': product.updatedAt.toIso8601String(),
       };
 
-      // Try to update first, if it fails, try to insert
-      try {
-        await _supabaseService.client
-            .from('products')
-            .update(data)
-            .eq('id', product.id);
-      } catch (updateError) {
-        await _supabaseService.client.from('products').insert(data);
-      }
+      // Use upsert to handle both insert and update cases
+      await _supabaseService.client.from('products').upsert(data);
 
       await _productDao.markAsSynced(product.id);
     } catch (e) {

@@ -83,7 +83,12 @@ class AuthRepository {
 
       return AuthResult.error('Inicio de sesión fallido: sesión no creada');
     } catch (e) {
-      return AuthResult.error(e.toString());
+      // Extract the actual message from Exception
+      String errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring('Exception: '.length);
+      }
+      return AuthResult.error(errorMessage);
     }
   }
 

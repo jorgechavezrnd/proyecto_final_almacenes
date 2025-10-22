@@ -137,7 +137,10 @@ class SupabaseService {
         case 'User not found':
           return Exception('Usuario no encontrado');
         case 'Email not confirmed':
-          return Exception('Email no confirmado');
+        case 'Signup requires email confirmation':
+          return Exception(
+            '📧 Debes confirmar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada y haz clic en el enlace de confirmación.',
+          );
         case 'Password should be at least 6 characters':
           return Exception('La contraseña debe tener al menos 6 caracteres');
         case 'Unable to validate email address: invalid format':
@@ -145,6 +148,14 @@ class SupabaseService {
         case 'User already registered':
           return Exception('El usuario ya está registrado');
         default:
+          // Check if message contains common email confirmation patterns
+          if (error.message.toLowerCase().contains('email') &&
+              (error.message.toLowerCase().contains('confirm') ||
+                  error.message.toLowerCase().contains('verify'))) {
+            return Exception(
+              '📧 Debes confirmar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada y haz clic en el enlace de confirmación.',
+            );
+          }
           return Exception('Error de autenticación: ${error.message}');
       }
     }

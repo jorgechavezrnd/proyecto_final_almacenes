@@ -92,7 +92,25 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc, auth_states.AuthState>(
+    return BlocConsumer<AuthBloc, auth_states.AuthState>(
+      listener: (context, state) {
+        if (state is auth_states.AuthError) {
+          // Handle email confirmation error with dialog
+          if (state.message.contains('confirmar tu correo') ||
+              state.message.contains('📧')) {
+            _showEmailConfirmationDialog(context, state.message);
+          } else {
+            // Show regular error
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          }
+        }
+      },
       builder: (context, state) {
         if (state is auth_states.AuthLoading ||
             state is auth_states.AuthInitial) {
@@ -104,6 +122,83 @@ class AuthWrapper extends StatelessWidget {
         } else {
           return const LoginScreen();
         }
+      },
+    );
+  }
+
+  void _showEmailConfirmationDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.email_outlined, color: Colors.orange, size: 40),
+              const SizedBox(height: 8),
+              const Text(
+                'Email no confirmado',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                message,
+                style: const TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.shade200),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.orange),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'También revisa tu carpeta de spam',
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Colors.orange,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
+                ),
+                child: const Text('OK'),
+              ),
+            ),
+          ],
+        );
       },
     );
   }
